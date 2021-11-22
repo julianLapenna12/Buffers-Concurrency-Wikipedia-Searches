@@ -1,6 +1,15 @@
 package cpen221.mp3.fsftbuffer;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class FSFTBuffer<T extends Bufferable> {
+
+    private Map<T, Long> masterMap;
+    private int timeout;
+    private int cap;
 
     /* the default buffer size is 32 objects */
     public static final int DSIZE = 32;
@@ -21,6 +30,10 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     public FSFTBuffer(int capacity, int timeout) {
         // TODO: implement this constructor
+
+        masterMap = new HashMap<>();
+        this.timeout = timeout;
+        this.cap = capacity;
     }
 
     /**
@@ -37,7 +50,16 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     public boolean put(T t) {
         // TODO: implement this method
-        return false;
+        // maybe check if T is the same type as the T given in the creation
+        long time = System.currentTimeMillis();
+        pruneMap(time);
+
+        if (masterMap.size() == cap) {
+            masterMap.remove(getOldest());
+        }
+
+        masterMap.put(t, time);
+        return true;
     }
 
     /**
@@ -63,6 +85,16 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     public boolean touch(String id) {
         /* TODO: Implement this method */
+        long time = System.currentTimeMillis();
+        pruneMap(time);
+
+        // check if given object exists
+        for (T t : masterMap.keySet()) {
+            if (t.id().equals(id)) { // if yes
+                masterMap.put(t, time); // reset time
+                return true;
+            }
+        } // otherwise return false
         return false;
     }
 
@@ -76,6 +108,41 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     public boolean update(T t) {
         /* TODO: implement this method */
+
+        long time = System.currentTimeMillis();
+        pruneMap(time);
+
+        for (T t1 : masterMap.keySet()) {
+            if (t1.equals(t)) {
+                masterMap.put(t, time);
+                return true;
+            }
+        }
         return false;
+    }
+
+    private T getOldest() {
+        T oldest = (T) masterMap.keySet().toArray()[0];
+
+        for (int i = 0; i < masterMap.size(); i++) {
+            if (masterMap.get(oldest) < masterMap.get(masterMap.keySet().toArray()[i])) {
+                oldest = (T) masterMap.keySet().toArray()[i];
+            }
+        }
+
+        return oldest;
+    }
+
+    private void pruneMap(long currentTime) {
+        HashMap<T, Long> copy = new HashMap<>(masterMap);
+        HashMap<T, Long> toRemove = new HashMap<>();
+
+        for(Map.Entry<T,Long> entry : copy.entrySet()) {
+            if (currentTime - entry.getValue() > timeout) {
+                toRemove.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        masterMap.entrySet().removeAll(toRemove.entrySet());
     }
 }
