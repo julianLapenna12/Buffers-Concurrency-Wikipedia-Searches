@@ -50,7 +50,7 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     public boolean put(T t) {
         // TODO: implement this method
-        // maybe check if T is the same type as the T given in the creation
+        // maybe check if T is the same type as the T given in the creation and if not throw exception
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -72,6 +72,14 @@ public class FSFTBuffer<T extends Bufferable> {
         /* Do not return null. Throw a suitable checked exception when an object
             is not in the cache. You can add the checked exception to the method
             signature. */
+
+        // check if given object exists
+        for (T t : masterMap.keySet()) {
+            if (t.id().equals(id)) { // if yes
+                return t;
+            }
+        } // otherwise throw an exception
+
         return null;
     }
 
