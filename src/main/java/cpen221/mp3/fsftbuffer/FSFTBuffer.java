@@ -1,15 +1,12 @@
 package cpen221.mp3.fsftbuffer;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FSFTBuffer<T extends Bufferable> {
 
     private Map<T, Long> masterMap;
-    private int timeout;
-    private int cap;
+    private final int timeout;
+    private final int cap;
 
     /* the default buffer size is 32 objects */
     public static final int DSIZE = 32;
@@ -73,9 +70,12 @@ public class FSFTBuffer<T extends Bufferable> {
             is not in the cache. You can add the checked exception to the method
             signature. */
 
+        long time = System.currentTimeMillis();
+
         // check if given object exists
         for (T t : masterMap.keySet()) {
             if (t.id().equals(id)) { // if yes
+                masterMap.put(t, time);
                 return t;
             }
         } // otherwise throw an exception
@@ -152,5 +152,15 @@ public class FSFTBuffer<T extends Bufferable> {
         }
 
         masterMap.entrySet().removeAll(toRemove.entrySet());
+    }
+
+    public Set<T> getCurrentSet() {
+        pruneMap(System.currentTimeMillis());
+        return masterMap.keySet();
+    }
+
+    public int numObjects() {
+        pruneMap(System.currentTimeMillis());
+        return masterMap.size();
     }
 }
