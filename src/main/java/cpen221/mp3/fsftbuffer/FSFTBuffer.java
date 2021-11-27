@@ -52,12 +52,16 @@ public class FSFTBuffer<T extends Bufferable> {
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        if (masterMap.size() >= cap) {
-            masterMap.remove(getOldest());
+        if (cap > 0) {
+            if (masterMap.size() >= cap) {
+                masterMap.remove(getOldest());
+            }
+
+            masterMap.put(t, time);
+            return true;
         }
 
-        masterMap.put(t, time);
-        return true;
+        return false;
     }
 
     /**
