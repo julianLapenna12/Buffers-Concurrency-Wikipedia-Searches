@@ -30,7 +30,7 @@ public class FSFTBuffer<T extends Bufferable> {
         // TODO: implement this constructor
 
         masterMap = new HashMap<>();
-        this.timeout = timeout;
+        this.timeout = 1000 * timeout;
         this.cap = capacity;
     }
 
@@ -125,10 +125,10 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     *
      * @return
      */
     private T getOldest() {
+        pruneMap(System.currentTimeMillis());
         T oldest = (T) masterMap.keySet().toArray()[0];
 
         for (int i = 0; i < masterMap.size(); i++) {
@@ -141,14 +141,13 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     *
      * @param currentTime
      */
     private void pruneMap(long currentTime) {
         HashMap<T, Long> copy = new HashMap<>(masterMap);
         HashMap<T, Long> toRemove = new HashMap<>();
 
-        for(Map.Entry<T,Long> entry : copy.entrySet()) {
+        for (Map.Entry<T, Long> entry : copy.entrySet()) {
             if (currentTime - entry.getValue() > timeout) {
                 toRemove.put(entry.getKey(), entry.getValue());
             }
@@ -158,7 +157,6 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     *
      * @return
      */
     public Set<T> getCurrentSet() {
@@ -167,7 +165,6 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     *
      * @return
      */
     public int getSize() {

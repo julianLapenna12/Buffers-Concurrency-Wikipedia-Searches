@@ -2,9 +2,11 @@ package cpen221.mp3;
 
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import cpen221.mp3.fsftbuffer.RandomObject;
+import org.hamcrest.Factory;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -95,6 +97,40 @@ public class Task1Testing {
         Thread.sleep(20);
 
         Assert.assertEquals(0, t.getSize());
+    }
+
+    @Test
+    public void testParams() throws NoSuchObjectException {
+        FSFTBuffer[] t = new FSFTBuffer[]{new FSFTBuffer(0, 0),
+                new FSFTBuffer(1, -1),
+                new FSFTBuffer(-1, 1),
+                new FSFTBuffer(-10, -10)};
+
+        RandomObject[] r = new RandomObject[]{new RandomObject("0"),
+                new RandomObject("1"), new RandomObject("2")};
+
+        for (FSFTBuffer t0 : t) {
+            for (RandomObject r0 : r) {
+                t0.put(r0);
+            }
+        }
+
+        for (FSFTBuffer t0 : t) {
+            Assert.assertTrue(t0.getSize() == 0);
+        }
+
+        for (FSFTBuffer t0 : t) {
+            for (RandomObject r0 : r) {
+                try {
+                    t0.get(r0.id());
+                    Assert.fail("expected exception was not thrown");
+                } catch (NoSuchObjectException e) {
+                    //if execution reaches here,
+                    //it indicates this exception was thrown
+                    //so we need not handle it.
+                }
+            }
+        }
     }
 
     /*
