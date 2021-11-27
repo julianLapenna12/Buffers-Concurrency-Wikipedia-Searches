@@ -1,5 +1,6 @@
 package cpen221.mp3.fsftbuffer;
 
+import java.rmi.NoSuchObjectException;
 import java.util.*;
 
 public class FSFTBuffer<T extends Bufferable> {
@@ -51,7 +52,7 @@ public class FSFTBuffer<T extends Bufferable> {
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        if (masterMap.size() == cap) {
+        if (masterMap.size() >= cap) {
             masterMap.remove(getOldest());
         }
 
@@ -62,25 +63,22 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the
-     * buffer
+     * buffer. If no such object matches the identifier, an
+     * exception will be thrown
      */
-    public T get(String id) {
-        /* TODO: change this */
-        /* Do not return null. Throw a suitable checked exception when an object
-            is not in the cache. You can add the checked exception to the method
-            signature. */
+    public T get(String id) throws NoSuchObjectException {
 
         long time = System.currentTimeMillis();
+        pruneMap(time);
 
-        // check if given object exists
         for (T t : masterMap.keySet()) {
-            if (t.id().equals(id)) { // if yes
+            if (t.id().equals(id)) {
                 masterMap.put(t, time);
                 return t;
             }
-        } // otherwise throw an exception
+        }
 
-        return null;
+        throw new NoSuchObjectException("No such object exists in the list");
     }
 
     /**
@@ -92,7 +90,6 @@ public class FSFTBuffer<T extends Bufferable> {
      * @return true if successful and false otherwise
      */
     public boolean touch(String id) {
-        /* TODO: Implement this method */
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -115,8 +112,6 @@ public class FSFTBuffer<T extends Bufferable> {
      * @return true if successful and false otherwise
      */
     public boolean update(T t) {
-        /* TODO: implement this method */
-
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -129,6 +124,10 @@ public class FSFTBuffer<T extends Bufferable> {
         return false;
     }
 
+    /**
+     *
+     * @return
+     */
     private T getOldest() {
         T oldest = (T) masterMap.keySet().toArray()[0];
 
@@ -141,6 +140,10 @@ public class FSFTBuffer<T extends Bufferable> {
         return oldest;
     }
 
+    /**
+     *
+     * @param currentTime
+     */
     private void pruneMap(long currentTime) {
         HashMap<T, Long> copy = new HashMap<>(masterMap);
         HashMap<T, Long> toRemove = new HashMap<>();
@@ -154,12 +157,20 @@ public class FSFTBuffer<T extends Bufferable> {
         masterMap.entrySet().removeAll(toRemove.entrySet());
     }
 
+    /**
+     *
+     * @return
+     */
     public Set<T> getCurrentSet() {
         pruneMap(System.currentTimeMillis());
-        return masterMap.keySet();
+        return new HashSet<>(masterMap.keySet());
     }
 
-    public int numObjects() {
+    /**
+     *
+     * @return
+     */
+    public int getSize() {
         pruneMap(System.currentTimeMillis());
         return masterMap.size();
     }

@@ -8,12 +8,5 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class Tests {
-
-    /*
-        You can add your tests here.
-        Remember to import the packages that you need, such
-        as cpen221.mp3.fsftbuffer.
-     */
-
+public class Task2Testing {
 }
