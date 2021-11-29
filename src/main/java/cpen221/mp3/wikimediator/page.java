@@ -8,12 +8,14 @@ import cpen221.mp3.fsftbuffer.Bufferable;
 public class page implements Bufferable {
     /*Used to store the id of the page*/
     public String id;
+    public String text;
 
     /**
      * Contructor for the class
      * @param pageTitle Title of the page to be constructed
      */
-    public page (String pageTitle) {
+    public page (String pageTitle, String content) {
+        text = content;
         id = pageTitle;
     }
 
@@ -23,5 +25,9 @@ public class page implements Bufferable {
      */
     public String id() {
         return (id);
+    }
+
+    public String getText(){
+        return text;
     }
 }

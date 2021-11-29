@@ -20,6 +20,8 @@ public class WikiMediator {
      */
     private FSFTBuffer pageData;
 
+    private FSFTBuffer searchData;
+
     private List<Long> searchRequests = new ArrayList<Long>();
 
     private List<Long> requests = new ArrayList<Long>();
@@ -32,7 +34,8 @@ public class WikiMediator {
      * @param stalenessInterval staleness interval for pages in the database
      */
     public WikiMediator(int capacity, int stalenessInterval) {
-        pageData = new FSFTBuffer(capacity, stalenessInterval);
+        pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
+        searchData = new FSFTBuffer<search>(capacity, stalenessInterval);
     }
 
     /**
@@ -41,10 +44,53 @@ public class WikiMediator {
      * @param limit number of elements that will be returned
      * @return A list of all the wikipedia pages matching the query
      */
-    List<String> search(String query, int limit) {
+    public List<String> search(String query, int limit) {
         searchRequests.add(System.currentTimeMillis());
-        return (wiki.search(query, limit));
+        requests.add(System.currentTimeMillis());
+
+        List<String> results = new ArrayList<String>();
+        search currentSearch;
+        search requestedSearch;
+
+        try {
+             currentSearch = (search)searchData.get(query);
+             if (currentSearch.getLimit() < limit) {
+                 results = wiki.search(query, limit);
+             }
+             else {
+                 results = currentSearch.getData();
+             }
+
+            requestedSearch = new search(query, limit, results);
+            searchData.put(requestedSearch);
+        }
+        catch (Exception e){
+            results = wiki.search(query, limit);
+
+            requestedSearch = new search(query, limit, results);
+            searchData.put(requestedSearch);
+        }
+        return (results);
     }
 
+    public String getPage(String pageTitle) {
+        searchRequests.add(System.currentTimeMillis());
+        requests.add(System.currentTimeMillis());
 
+        String result;
+
+        page currentPage;
+
+        try {
+            currentPage = (page)pageData.get(pageTitle);
+            result = currentPage.getText();
+        }
+        catch (Exception e){
+            currentPage = new page(pageTitle, wiki.getPageText(pageTitle));
+            result = currentPage.getText();
+            pageData.put(currentPage);
+        }
+
+        return result;
+    }
 }
