@@ -90,7 +90,6 @@ public class WikiMediator {
             result = currentPage.getText();
             pageData.put(currentPage);
         }
-
         return result;
     }
 }

@@ -27,6 +27,10 @@ public class page implements Bufferable {
         return (id);
     }
 
+    /**
+     *
+     * @return
+     */
     public String getText(){
         return text;
     }

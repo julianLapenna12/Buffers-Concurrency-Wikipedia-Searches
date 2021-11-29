@@ -9,6 +9,12 @@ public class search implements Bufferable{
     private int size;
     private List<String> resultList;
 
+    /**
+     *
+     * @param search
+     * @param limit
+     * @param results
+     */
     public search(String search, int limit, List<String> results){
         id = search;
         size = limit;
