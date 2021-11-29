@@ -204,12 +204,12 @@ public class Task1Testing {
      * TODO:
      **  test negative capacity and timeout vals
      **  test capacity and timeout
-     *  test removing objects (when object doesn't exist)
-     *  test replacing objects (when the oldest one is expired)
-     *  test updating/touching an expired object
-     *  test adding, updating, then prune and updated objects are still there, others have expired
-     *  test get method (catching and confirming objects)
-     *  test duplicate ids and duplicate puts
+     **  test removing objects (when object doesn't exist)
+     **  test replacing objects (when the oldest one is expired)
+     **  test updating/touching an expired object
+     **  test adding, updating, then prune and updated objects are still there, others have expired
+     **  test get method (catching and confirming objects)
+     **  test duplicate ids and duplicate puts
      */
 
 }
