@@ -2,6 +2,7 @@ package cpen221.mp3.fsftbuffer;
 
 import java.rmi.NoSuchObjectException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FSFTBuffer<T extends Bufferable> {
 
@@ -132,11 +133,11 @@ public class FSFTBuffer<T extends Bufferable> {
      * @return
      */
     private T getOldest() {
-        pruneMap(System.currentTimeMillis());
+        //pruneMap(System.currentTimeMillis());
         T oldest = (T) masterMap.keySet().toArray()[0];
 
         for (int i = 0; i < masterMap.size(); i++) {
-            if (masterMap.get(oldest) < masterMap.get(masterMap.keySet().toArray()[i])) {
+            if (masterMap.get(oldest) > masterMap.get(masterMap.keySet().toArray()[i])) {
                 oldest = (T) masterMap.keySet().toArray()[i];
             }
         }
