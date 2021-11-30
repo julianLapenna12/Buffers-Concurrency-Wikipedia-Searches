@@ -72,9 +72,22 @@ public class WikiMediatorServer {
         {
             for (String line = in.readLine(); line != null;
                  line = in.readLine()) {
-
+                    WikiRequest request = gsonReader.fromJson(line, WikiRequest.class);
+                    out.println(handleRequest(request, gsonReader));
             }
         }
+    }
+
+    private String handleRequest(WikiRequest request, Gson gson){
+        WikiResponse response;
+        if(request.type == "search"){
+
+        }
+        else if (request.type == "getPage"){
+
+        }
+
+        return gson.toJson(request, WikiRequest.class);
     }
 
     //Handles shutdown by writing state of Wikimediator to disk
