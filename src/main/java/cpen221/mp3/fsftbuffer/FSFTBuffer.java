@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class FSFTBuffer<T extends Bufferable> {
 
-    private Map<T, Long> masterMap;
+    private final Map<T, Long> masterMap;
     private final int timeout;
     private final int cap;
 
@@ -28,8 +28,6 @@ public class FSFTBuffer<T extends Bufferable> {
      *                 be in the buffer before it times out
      */
     public FSFTBuffer(int capacity, int timeout) {
-        // TODO: implement this constructor
-
         masterMap = new HashMap<>();
         this.timeout = 1000 * timeout;
         this.cap = capacity;
@@ -47,9 +45,7 @@ public class FSFTBuffer<T extends Bufferable> {
      * If the buffer is full then remove the least recently accessed
      * object to make room for the new object.
      */
-    public boolean put(T t) {
-        // TODO: implement this method
-        // maybe check if T is the same type as the T given in the creation and if not throw exception
+    synchronized public boolean put(T t) {
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -71,7 +67,7 @@ public class FSFTBuffer<T extends Bufferable> {
      * buffer. If no such object matches the identifier, an
      * exception will be thrown
      */
-    public T get(String id) throws NoSuchObjectException {
+    synchronized public T get(String id) throws NoSuchObjectException {
 
         long time = System.currentTimeMillis();
         pruneMap(time);
@@ -94,7 +90,7 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param id the identifier of the object to "touch"
      * @return true if successful and false otherwise
      */
-    public boolean touch(String id) {
+    synchronized public boolean touch(String id) {
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -116,7 +112,7 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param t the object to update
      * @return true if successful and false otherwise
      */
-    public boolean update(T t) {
+    synchronized public boolean update(T t) {
         long time = System.currentTimeMillis();
         pruneMap(time);
 
@@ -132,10 +128,10 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @return
      */
-    private T getOldest() {
-        //pruneMap(System.currentTimeMillis());
+    synchronized private T getOldest() {
         T oldest = (T) masterMap.keySet().toArray()[0];
 
+        // finding the object with the smallest time of creation
         for (int i = 0; i < masterMap.size(); i++) {
             if (masterMap.get(oldest) > masterMap.get(masterMap.keySet().toArray()[i])) {
                 oldest = (T) masterMap.keySet().toArray()[i];
@@ -148,7 +144,7 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @param currentTime
      */
-    private void pruneMap(long currentTime) {
+    synchronized private void pruneMap(long currentTime) {
         HashMap<T, Long> copy = new HashMap<>(masterMap);
         HashMap<T, Long> toRemove = new HashMap<>();
 
@@ -164,7 +160,7 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @return
      */
-    public Set<T> getCurrentSet() {
+    synchronized public Set<T> getCurrentSet() {
         pruneMap(System.currentTimeMillis());
         return new HashSet<>(masterMap.keySet());
     }
@@ -172,7 +168,7 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @return
      */
-    public int getSize() {
+    synchronized public int getSize() {
         pruneMap(System.currentTimeMillis());
         return masterMap.size();
     }
