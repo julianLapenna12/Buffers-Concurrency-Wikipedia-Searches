@@ -2,8 +2,9 @@ package cpen221.mp3.wikimediator;
 
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import org.fastily.jwiki.core.Wiki;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class WikiMediator {
 
@@ -20,11 +21,9 @@ public class WikiMediator {
      */
     private FSFTBuffer pageData;
 
-    private FSFTBuffer searchData;
-
     private List<Long> searchRequests = new ArrayList<Long>();
-
     private List<Long> requests = new ArrayList<Long>();
+    private Map<String, Integer> requestMap = new HashMap<String, Integer>();
 
     private Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
@@ -35,7 +34,6 @@ public class WikiMediator {
      */
     public WikiMediator(int capacity, int stalenessInterval) {
         pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
-        searchData = new FSFTBuffer<search>(capacity, stalenessInterval);
     }
 
     /**
@@ -47,35 +45,27 @@ public class WikiMediator {
     public List<String> search(String query, int limit) {
         searchRequests.add(System.currentTimeMillis());
         requests.add(System.currentTimeMillis());
+        int timesPrevRequested = 0;
+
+        int prevRequestCount = requestMap.getOrDefault(query, 0);
+        requestMap.put(query, ++prevRequestCount);
 
         List<String> results = new ArrayList<String>();
-        search currentSearch;
-        search requestedSearch;
-
-        try {
-             currentSearch = (search)searchData.get(query);
-             if (currentSearch.getLimit() < limit) {
-                 results = wiki.search(query, limit);
-             }
-             else {
-                 results = currentSearch.getData();
-             }
-
-            requestedSearch = new search(query, limit, results);
-            searchData.put(requestedSearch);
-        }
-        catch (Exception e){
-            results = wiki.search(query, limit);
-
-            requestedSearch = new search(query, limit, results);
-            searchData.put(requestedSearch);
-        }
+        results = wiki.search(query, limit);
         return (results);
     }
 
+    /**
+     * Given a page title, return the text of the page
+     * @param pageTitle Page title of data to return
+     * @return String of the text of the page
+     */
     public String getPage(String pageTitle) {
         searchRequests.add(System.currentTimeMillis());
         requests.add(System.currentTimeMillis());
+
+        int prevRequestCount = requestMap.getOrDefault(pageTitle, 0);
+        requestMap.put(pageTitle, ++prevRequestCount);
 
         String result;
 
@@ -91,5 +81,20 @@ public class WikiMediator {
             pageData.put(currentPage);
         }
         return result;
+    }
+
+    /**
+     *
+     * @param limit
+     * @return
+     */
+    public List<String> zeitgeist(int limit) {
+        List<String> returnList = requestMap.entrySet().stream()
+                                            .sorted(Comparator.comparingInt(Map.Entry::getValue))
+                                            .map(Map.Entry::getKey)
+                                            .collect(Collectors.toList());
+        Collections.reverse(returnList);
+
+        return returnList;
     }
 }
