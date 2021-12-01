@@ -18,6 +18,7 @@ public class WikiMediatorServer {
     private Gson gson;
     private WikiMediator mediator;
     private int maxThreads;
+    private int numThread;
 
     /**
      * Start a server at a given port number, with the ability to process
@@ -32,13 +33,16 @@ public class WikiMediatorServer {
             serverSocket = new ServerSocket(port);
             maxThreads = n;
             mediator = wikiMediator;
+            //TODO read the state of saved data from disk
+            //Start the server
+            serve();
         }
         catch (IOException e){
             System.out.println("Could Not Connect!");
         }
     }
 
-    public void serve () throws IOException {
+    private void serve () throws IOException {
         while(true){
             final Socket socket = serverSocket.accept();
             Thread handler = new Thread(new Runnable() {
@@ -87,12 +91,17 @@ public class WikiMediatorServer {
 
         }
 
+        else if (request.type == "stop"){
+
+        }
+
         return gson.toJson(request, WikiRequest.class);
     }
 
     //Handles shutdown by writing state of Wikimediator to disk
-    private void shutdown(){
-
+    private void shutdown() throws IOException {
+        //TODO Write the state of WikiMediator to disk
+        serverSocket.close();
     }
 
 }
