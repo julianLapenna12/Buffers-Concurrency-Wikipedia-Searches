@@ -77,7 +77,7 @@ public class Task1Testing {
     }
 
     @Test
-    public void testMaxCap() {
+    public void testMaxCap() throws InterruptedException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 100);
 
         ArrayList<TestObject> testList = new ArrayList<>();
@@ -85,6 +85,7 @@ public class Task1Testing {
         for (int i = 0; i < 7; i++) {
             testList.add(new TestObject(Integer.toString(i)));
             t.put(testList.get(i));
+            Thread.sleep(10);
         }
 
         try {
