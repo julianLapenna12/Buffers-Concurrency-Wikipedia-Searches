@@ -47,25 +47,33 @@ public class Task1Testing {
         Assert.assertFalse(t.update(ro2));
     }
 
-    /*
+
     @Test
     public void testSet() {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>();
 
-        TestObject ro0 = new TestObject("0");
-        TestObject ro1 = new TestObject("1");
-        TestObject ro2 = new TestObject("2");
+        TestObject t0 = new TestObject("0");
+        TestObject t1 = new TestObject("1");
+        TestObject t2 = new TestObject("2");
 
         HashSet<TestObject> testSet = new HashSet<>();
 
-        testSet.add(ro0);
-        testSet.add(ro1);
-        testSet.add(ro2);
+        testSet.add(t0);
+        testSet.add(t1);
+        testSet.add(t2);
 
-        for (TestObject ro : testSet) {
-            t.put(ro);
+        for (TestObject testObj : testSet) {
+            Assert.assertTrue(t.put(testObj));
         }
-        Assert.assertEquals(t.getCurrentSet(), testSet);
+
+        try {
+            for (TestObject testObj : testSet) {
+                Assert.assertEquals(t.get(testObj.id()), testObj);
+            }
+        } catch (NoSuchObjectException e) {
+            // this should not happen
+            Assert.fail();
+        }
     }
 
     @Test
@@ -79,8 +87,15 @@ public class Task1Testing {
             t.put(testList.get(i));
         }
 
-        Assert.assertEquals(t.getCurrentSet(), t.getCurrentSet());
-        Assert.assertNotEquals(t.getCurrentSet(), new HashSet<>(testList));
+        try {
+            for (int i = 3; i < 7; i++) {
+                Assert.assertEquals(t.get(Integer.toString(i)).id(), Integer.toString(i));
+            }
+        } catch (NoSuchObjectException e) {
+            // this should never reach here
+            Assert.fail();
+        }
+
         Assert.assertEquals(4, t.getSize());
     }
 
@@ -108,12 +123,12 @@ public class Task1Testing {
         t[2] = new FSFTBuffer<>(-1, 1);
         t[3] = new FSFTBuffer<>(-10, -10);
 
-        TestObject[] r = new TestObject[]{new TestObject("0"),
+        TestObject[] testObj = new TestObject[]{new TestObject("0"),
                 new TestObject("1"), new TestObject("2")};
 
         for (FSFTBuffer<TestObject> t0 : t) {
-            for (TestObject r0 : r) {
-                t0.put(r0);
+            for (TestObject T : testObj) {
+                t0.put(T);
             }
         }
 
@@ -122,19 +137,21 @@ public class Task1Testing {
         }
 
         for (FSFTBuffer<TestObject> t0 : t) {
-            for (TestObject r0 : r) {
+            for (TestObject T : testObj) {
                 try {
-                    t0.get(r0.id());
+                    t0.get(T.id());
                     Assert.fail("expected exception was not thrown");
                 } catch (NoSuchObjectException e) {
-                    //if execution reaches here,
-                    //it indicates this exception was thrown
-                    //so we need not handle it.
+                    // if execution reaches here,
+                    // it indicates this exception was thrown
+                    // which is what we want
+                    Assert.assertTrue(true);
                 }
             }
         }
     }
 
+    /*
     @Test
     public void testTimeouts() throws InterruptedException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
