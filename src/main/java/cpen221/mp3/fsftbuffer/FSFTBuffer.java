@@ -1,12 +1,13 @@
 package cpen221.mp3.fsftbuffer;
 
 import java.rmi.NoSuchObjectException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FSFTBuffer<T extends Bufferable> {
 
-    private final Map<T, Long> masterMap;
+    private final Map<String, DetailedObject> masterMap = new HashMap<>();
     private final int timeout;
     private final int cap;
 
@@ -28,7 +29,6 @@ public class FSFTBuffer<T extends Bufferable> {
      *                 be in the buffer before it times out
      */
     public FSFTBuffer(int capacity, int timeout) {
-        masterMap = new HashMap<>();
         this.timeout = 1000 * timeout;
         this.cap = capacity;
     }
@@ -46,15 +46,17 @@ public class FSFTBuffer<T extends Bufferable> {
      * object to make room for the new object.
      */
     synchronized public boolean put(T t) {
+        if (t == null) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
         if (cap > 0) {
             if (masterMap.size() >= cap) {
-                masterMap.remove(getOldest());
+                masterMap.remove(getLeastRecentlyAccessed());
             }
 
-            masterMap.put(t, time);
+            masterMap.put(t.id(), new DetailedObject(t, time));
             return true;
         }
 
@@ -68,18 +70,15 @@ public class FSFTBuffer<T extends Bufferable> {
      * exception will be thrown
      */
     synchronized public T get(String id) throws NoSuchObjectException {
+        if (id == null) throw new NoSuchObjectException("All IDs must be non null.");
 
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        for (T t : masterMap.keySet()) {
-            if (t.id().equals(id)) {
-                masterMap.put(t, time);
-                return t;
-            }
-        }
+        if (!masterMap.containsKey(id)) throw new NoSuchObjectException("All IDs must be non null.");
 
-        throw new NoSuchObjectException("No such object exists in the list");
+        masterMap.get(id).setAccessTime(time); // updating the access time
+        return (T) masterMap.get(id).storedObject;
     }
 
     /**
@@ -91,15 +90,15 @@ public class FSFTBuffer<T extends Bufferable> {
      * @return true if successful and false otherwise
      */
     synchronized public boolean touch(String id) {
+        if (id == null) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
         // check if given object exists
-        for (T t : masterMap.keySet()) {
-            if (t.id().equals(id)) { // if yes
-                masterMap.put(t, time); // reset time
-                return true;
-            }
+        if (masterMap.containsKey(id)) {
+            masterMap.get(id).setStaleTime(time);
+            return true;
         } // otherwise return false
         return false;
     }
@@ -113,57 +112,51 @@ public class FSFTBuffer<T extends Bufferable> {
      * @return true if successful and false otherwise
      */
     synchronized public boolean update(T t) {
+        if (t == null) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        for (T t1 : masterMap.keySet()) {
-            if (t1.equals(t)) {
-                masterMap.put(t, time);
-                return true;
-            }
-        }
-        return false;
+        if (!masterMap.containsKey(t.id())) return false;
+
+        masterMap.get(t.id()).setAccessTime(time);
+        return true;
     }
 
     /**
      * @return
      */
-    synchronized private T getOldest() {
-        T oldest = (T) masterMap.keySet().toArray()[0];
+    synchronized private String getLeastRecentlyAccessed() {
+        ArrayList<DetailedObject> sortedList = new ArrayList<>(masterMap.values());
+        sortedList.sort(DetailedObject::compareTo);
 
-        // finding the object with the smallest time of creation
-        for (int i = 0; i < masterMap.size(); i++) {
-            if (masterMap.get(oldest) > masterMap.get(masterMap.keySet().toArray()[i])) {
-                oldest = (T) masterMap.keySet().toArray()[i];
-            }
-        }
-
-        return oldest;
+        return sortedList.get(sortedList.size() - 1).id();
     }
 
     /**
      * @param currentTime
      */
     synchronized private void pruneMap(long currentTime) {
-        HashMap<T, Long> copy = new HashMap<>(masterMap);
-        HashMap<T, Long> toRemove = new HashMap<>();
+        HashMap<String, DetailedObject> copy = new HashMap<>(masterMap);
+        HashMap<String , DetailedObject> toRemove = new HashMap<>();
 
-        for (Map.Entry<T, Long> entry : copy.entrySet()) {
-            if (currentTime - entry.getValue() > timeout) {
+        for (Map.Entry<String, DetailedObject> entry : copy.entrySet()) {
+            if (currentTime - entry.getValue().getStaleTime() > timeout) {
                 toRemove.put(entry.getKey(), entry.getValue());
             }
         }
-
         masterMap.entrySet().removeAll(toRemove.entrySet());
     }
 
+    /*
     /**
      * @return
-     */
+     *
     synchronized public Set<T> getCurrentSet() {
         pruneMap(System.currentTimeMillis());
         return new HashSet<>(masterMap.keySet());
     }
+    */
 
     /**
      * @return

@@ -1,7 +1,7 @@
 package cpen221.mp3;
 
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
-import cpen221.mp3.fsftbuffer.RandomObject;
+import cpen221.mp3.fsftbuffer.TestObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,18 +15,18 @@ public class Task1Testing {
 
     @Test
     public void testConstruction() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>();
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>();
     }
 
     @Test
     public void testConstruction2() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>(10, 10);
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(10, 10);
     }
 
     @Test
     public void testAdding() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>();
-        RandomObject ro0 = new RandomObject("0");
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>();
+        TestObject ro0 = new TestObject("0");
         t.put(ro0);
 
         Assert.assertTrue(t.touch("0"));
@@ -34,10 +34,10 @@ public class Task1Testing {
 
     @Test
     public void testAddingObjects() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>();
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>();
 
-        RandomObject ro0 = new RandomObject("0");
-        RandomObject ro2 = new RandomObject("2");
+        TestObject ro0 = new TestObject("0");
+        TestObject ro2 = new TestObject("2");
 
         t.put(ro0);
 
@@ -47,21 +47,22 @@ public class Task1Testing {
         Assert.assertFalse(t.update(ro2));
     }
 
+    /*
     @Test
     public void testSet() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>();
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>();
 
-        RandomObject ro0 = new RandomObject("0");
-        RandomObject ro1 = new RandomObject("1");
-        RandomObject ro2 = new RandomObject("2");
+        TestObject ro0 = new TestObject("0");
+        TestObject ro1 = new TestObject("1");
+        TestObject ro2 = new TestObject("2");
 
-        HashSet<RandomObject> testSet = new HashSet<>();
+        HashSet<TestObject> testSet = new HashSet<>();
 
         testSet.add(ro0);
         testSet.add(ro1);
         testSet.add(ro2);
 
-        for (RandomObject ro : testSet) {
+        for (TestObject ro : testSet) {
             t.put(ro);
         }
         Assert.assertEquals(t.getCurrentSet(), testSet);
@@ -69,12 +70,12 @@ public class Task1Testing {
 
     @Test
     public void testMaxCap() {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>(4, 100);
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 100);
 
-        ArrayList<RandomObject> testList = new ArrayList<>();
+        ArrayList<TestObject> testList = new ArrayList<>();
 
         for (int i = 0; i < 7; i++) {
-            testList.add(new RandomObject(Integer.toString(i)));
+            testList.add(new TestObject(Integer.toString(i)));
             t.put(testList.get(i));
         }
 
@@ -85,12 +86,12 @@ public class Task1Testing {
 
     @Test
     public void testMaxTimeout() throws InterruptedException {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>(4, 5);
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 5);
 
-        ArrayList<RandomObject> testList = new ArrayList<>();
+        ArrayList<TestObject> testList = new ArrayList<>();
 
         for (int i = 0; i < 7; i++) {
-            testList.add(new RandomObject(Integer.toString(i)));
+            testList.add(new TestObject(Integer.toString(i)));
             t.put(testList.get(i));
         }
 
@@ -101,27 +102,27 @@ public class Task1Testing {
 
     @Test
     public void testParams() {
-        FSFTBuffer<RandomObject>[] t = new FSFTBuffer[4];
+        FSFTBuffer<TestObject>[] t = new FSFTBuffer[4];
         t[0] = new FSFTBuffer<>(0, 0);
         t[1] = new FSFTBuffer<>(1, -1);
         t[2] = new FSFTBuffer<>(-1, 1);
         t[3] = new FSFTBuffer<>(-10, -10);
 
-        RandomObject[] r = new RandomObject[]{new RandomObject("0"),
-                new RandomObject("1"), new RandomObject("2")};
+        TestObject[] r = new TestObject[]{new TestObject("0"),
+                new TestObject("1"), new TestObject("2")};
 
-        for (FSFTBuffer<RandomObject> t0 : t) {
-            for (RandomObject r0 : r) {
+        for (FSFTBuffer<TestObject> t0 : t) {
+            for (TestObject r0 : r) {
                 t0.put(r0);
             }
         }
 
-        for (FSFTBuffer<RandomObject> t0 : t) {
+        for (FSFTBuffer<TestObject> t0 : t) {
             Assert.assertEquals(0, t0.getSize());
         }
 
-        for (FSFTBuffer<RandomObject> t0 : t) {
-            for (RandomObject r0 : r) {
+        for (FSFTBuffer<TestObject> t0 : t) {
+            for (TestObject r0 : r) {
                 try {
                     t0.get(r0.id());
                     Assert.fail("expected exception was not thrown");
@@ -136,12 +137,12 @@ public class Task1Testing {
 
     @Test
     public void testTimeouts() throws InterruptedException {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>(4, 4);
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
 
-        RandomObject[] r = new RandomObject[]{new RandomObject("a"),
-                new RandomObject("b"), new RandomObject("c"),
-                new RandomObject("d"), new RandomObject("e"),
-                new RandomObject("f")};
+        TestObject[] r = new TestObject[]{new TestObject("a"),
+                new TestObject("b"), new TestObject("c"),
+                new TestObject("d"), new TestObject("e"),
+                new TestObject("f")};
 
         // Add a, b, c
         t.put(r[0]);
@@ -202,12 +203,12 @@ public class Task1Testing {
 
     @Test
     public void testTimeouts2() throws InterruptedException {
-        FSFTBuffer<RandomObject> t = new FSFTBuffer<>(4, 4);
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
 
-        RandomObject[] r = new RandomObject[]{new RandomObject("0"),
-                new RandomObject("1"), new RandomObject("2"),
-                new RandomObject("3"), new RandomObject("4"),
-                new RandomObject("5")};
+        TestObject[] r = new TestObject[]{new TestObject("0"),
+                new TestObject("1"), new TestObject("2"),
+                new TestObject("3"), new TestObject("4"),
+                new TestObject("5")};
 
         // Add 0, 1
         t.put(r[0]);
@@ -253,7 +254,12 @@ public class Task1Testing {
         Thread.sleep(4000);
 
         Assert.assertEquals(t.getSize(), 0);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<RandomObject>());
+        Assert.assertEquals(t.getCurrentSet(), new HashSet<TestObject>());
+    }
+
+    @Test
+    public void testNullValues() {
+
     }
 
     /*

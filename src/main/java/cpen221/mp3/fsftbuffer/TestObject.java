@@ -1,9 +1,9 @@
 package cpen221.mp3.fsftbuffer;
 
-public class RandomObject implements Bufferable {
+public class TestObject implements Bufferable {
     private final String id;
 
-    public RandomObject(String id) {
+    public TestObject(String id) {
         this.id = id;
     }
 
