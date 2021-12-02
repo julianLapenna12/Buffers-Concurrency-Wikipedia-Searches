@@ -144,7 +144,9 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     * @param currentTime
+     * Removes objects in the buffer that have exceeded the
+     * timeout time.
+     * @param currentTime the time when this method was called
      */
     synchronized private void pruneMap(long currentTime) {
         // using a stream and lambda function!!! Yay
@@ -154,7 +156,8 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     * @return
+     * @return the number of unexpired objects currently
+     * stored in the buffer.
      */
     synchronized public int getSize() {
         pruneMap(System.currentTimeMillis());
