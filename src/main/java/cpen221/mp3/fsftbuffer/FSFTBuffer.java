@@ -45,6 +45,13 @@ public class FSFTBuffer<T extends Bufferable> {
      * Add a value to the buffer.
      * If the buffer is full then remove the least recently accessed
      * object to make room for the new object.
+     *
+     * If objects with the same identifier are added (including adding
+     * the same object multiple times), old objects are replaced
+     * by the newest object with the identifier and they are treated
+     * as they are the first time they're added.
+     * @param t the object to put
+     * @return true if successful, false otherwise
      */
     synchronized public boolean put(T t) {
         if (t == null) return false;
@@ -79,7 +86,7 @@ public class FSFTBuffer<T extends Bufferable> {
         if (!masterMap.containsKey(id)) throw new NoSuchObjectException("All IDs must be non null.");
 
         masterMap.get(id).setAccessTime(time); // updating the access time
-        return (T) masterMap.get(id).storedObject;
+        return (T) masterMap.get(id).getStoredObject();
     }
 
     /**
@@ -120,12 +127,14 @@ public class FSFTBuffer<T extends Bufferable> {
 
         if (!masterMap.containsKey(t.id())) return false;
 
-        masterMap.get(t.id()).setAccessTime(time);
+        // TODO: verify this is correct
+        masterMap.get(t.id()).setStaleTime(time);
+        masterMap.get(t.id()).setStoredObject(t);
         return true;
     }
 
     /**
-     * @return
+     * @return the object that has least recently been used
      */
     synchronized private String getLeastRecentlyAccessed() {
         ArrayList<DetailedObject> sortedList = new ArrayList<>(masterMap.values());
@@ -144,7 +153,7 @@ public class FSFTBuffer<T extends Bufferable> {
                 .map(DetailedObject::id).collect(Collectors.toSet()));
     }
 
-       /**
+    /**
      * @return
      */
     synchronized public int getSize() {

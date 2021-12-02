@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class DetailedObject<T extends Bufferable> implements Comparable {
 
-    final T storedObject;
+    private T storedObject;
     private long staleTime, accessTime;
 
     public DetailedObject(T t, long timeCreated) {
@@ -31,6 +31,14 @@ public class DetailedObject<T extends Bufferable> implements Comparable {
 
     public String id() {
         return storedObject.id();
+    }
+
+    public void setStoredObject(T storedObject) {
+        this.storedObject = storedObject;
+    }
+
+    public T getStoredObject() {
+        return storedObject;
     }
 
     @Override
