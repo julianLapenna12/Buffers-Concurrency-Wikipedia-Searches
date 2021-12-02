@@ -7,8 +7,6 @@ import org.junit.Test;
 
 import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 
 public class Task1Testing {
@@ -152,9 +150,9 @@ public class Task1Testing {
         }
     }
 
-    /*
+
     @Test
-    public void testTimeouts() throws InterruptedException {
+    public void testTimeouts() throws InterruptedException, NoSuchObjectException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
 
         TestObject[] r = new TestObject[]{new TestObject("a"),
@@ -162,63 +160,81 @@ public class Task1Testing {
                 new TestObject("d"), new TestObject("e"),
                 new TestObject("f")};
 
-        // Add a, b, c
-        t.put(r[0]);
-        t.put(r[1]);
-        t.put(r[2]);
+        try {
+            // Add a, b, c
+            Assert.assertTrue(t.put(r[0]));
+            Assert.assertTrue(t.put(r[1]));
+            Assert.assertTrue(t.put(r[2]));
 
-        Assert.assertEquals(t.getSize(), 3);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[0], r[1], r[2])));
+            Assert.assertEquals(t.getSize(), 3);
+            for (int i = 0; i < 2; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        Thread.sleep(3000);
+            Thread.sleep(3000);
 
-        Assert.assertEquals(t.getSize(), 3);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[0], r[1], r[2])));
+            Assert.assertEquals(t.getSize(), 3);
+            for (int i = 0; i < 2; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        // Add b, c, d
-        t.put(r[1]);
-        t.put(r[2]);
-        t.put(r[3]);
+            // Add b, c, d
+            Assert.assertTrue(t.put(r[1]));
+            Assert.assertTrue(t.put(r[2]));
+            Assert.assertTrue(t.put(r[3]));
 
-        Assert.assertEquals(t.getSize(), 4);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[0], r[1], r[2], r[3])));
+            Assert.assertEquals(t.getSize(), 4);
+            for (int i = 0; i < 4; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        Thread.sleep(1200); // a has expired
+            Thread.sleep(1200); // a has expired
 
-        Assert.assertFalse(t.touch("a"));
-        Assert.assertEquals(t.getSize(), 3);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[1], r[2], r[3])));
+            Assert.assertFalse(t.touch("a"));
+            Assert.assertEquals(t.getSize(), 3);
+            for (int i = 1; i < 4; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        // touch c, update d
-        t.touch("c");
-        t.update(r[3]);
+            // touch c, update d
+            Assert.assertTrue(t.touch("c"));
+            Assert.assertTrue(t.update(r[3]));
 
-        Thread.sleep(1500);
+            Thread.sleep(1500);
 
-        // Add e, f (b should be removed as oldest)
-        t.put(r[4]);
-        t.put(r[5]);
+            // Add e, f (b should be removed as oldest)
+            Assert.assertTrue(t.put(r[4]));
+            Assert.assertTrue(t.put(r[5]));
 
-        Assert.assertEquals(t.getSize(), 4);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[2], r[3], r[4], r[5])));
+            Assert.assertEquals(t.getSize(), 4);
+            for (int i = 2; i < 6; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        Thread.sleep(3000); // c, d have expired
+            Thread.sleep(3000); // c, d have expired
 
-        // Add f
-        t.put(r[5]);
-        Assert.assertEquals(t.getSize(), 2);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[4], r[5])));
+            // Add f
+            Assert.assertTrue(t.put(r[5]));
+            Assert.assertEquals(t.getSize(), 2);
+            for (int i = 4; i < 6; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        Thread.sleep(1500); // e expired
+            Thread.sleep(1500); // e expired
 
-        Assert.assertEquals(t.getSize(), 1);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Collections.singletonList(r[5])));
+            Assert.assertEquals(t.getSize(), 1);
+            Assert.assertEquals(t.get("f"), r[5]);
 
-        Thread.sleep(3000); // f expired
+            Thread.sleep(3000); // f expired
 
-        Assert.assertEquals(t.getSize(), 0);
+            Assert.assertEquals(t.getSize(), 0);
+        } catch (NoSuchObjectException e) {
+            // should never reach here
+            Assert.fail();
+        }
     }
 
+    /*
     @Test
     public void testTimeouts2() throws InterruptedException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);

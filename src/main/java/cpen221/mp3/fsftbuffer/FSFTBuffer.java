@@ -4,6 +4,7 @@ import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FSFTBuffer<T extends Bufferable> {
 
@@ -137,28 +138,13 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param currentTime
      */
     synchronized private void pruneMap(long currentTime) {
-        HashMap<String, DetailedObject> copy = new HashMap<>(masterMap);
-        HashMap<String , DetailedObject> toRemove = new HashMap<>();
-
-        for (Map.Entry<String, DetailedObject> entry : copy.entrySet()) {
-            if (currentTime - entry.getValue().getStaleTime() > timeout) {
-                toRemove.put(entry.getKey(), entry.getValue());
-            }
-        }
-        masterMap.entrySet().removeAll(toRemove.entrySet());
+        // using a stream and lambda function!!! Yay
+        masterMap.keySet().removeAll(masterMap.values().stream()
+                .filter(t -> t.getStaleTime() < currentTime - timeout)
+                .map(DetailedObject::id).collect(Collectors.toSet()));
     }
 
-    /*
-    /**
-     * @return
-     *
-    synchronized public Set<T> getCurrentSet() {
-        pruneMap(System.currentTimeMillis());
-        return new HashSet<>(masterMap.keySet());
-    }
-    */
-
-    /**
+       /**
      * @return
      */
     synchronized public int getSize() {
