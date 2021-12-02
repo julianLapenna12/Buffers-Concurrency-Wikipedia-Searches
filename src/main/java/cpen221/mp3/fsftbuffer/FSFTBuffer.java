@@ -67,7 +67,7 @@ public class FSFTBuffer<T extends Bufferable> {
             masterMap.put(t.id(), new DetailedObject(t, time));
             return true;
         }
-
+        // if the capacity <= 0 then nothing can be put in the buffer
         return false;
     }
 
@@ -138,6 +138,8 @@ public class FSFTBuffer<T extends Bufferable> {
      */
     synchronized private String getLeastRecentlyAccessed() {
         ArrayList<DetailedObject> sortedList = new ArrayList<>(masterMap.values());
+
+        // sorting by access time as defined in DetailedObject.java
         sortedList.sort(DetailedObject::compareTo);
 
         return sortedList.get(0).id();
