@@ -5,8 +5,6 @@ import cpen221.mp3.fsftbuffer.TestObject;
 import org.junit.Assert;
 
 import java.rmi.NoSuchObjectException;
-import java.util.Arrays;
-import java.util.HashSet;
 
 // Main Class that creates and starts the threads
 public class Task2Testing {
@@ -23,7 +21,6 @@ public class Task2Testing {
 
 
 }
-
 
 class TestThread implements Runnable {
     public void run() {
@@ -68,7 +65,9 @@ class TestThread implements Runnable {
         Assert.assertTrue(t.put(r5));
         Assert.assertTrue(t.put(r0));
 
-        //Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r0, r4, r5)));
-
+        Assert.assertEquals(t.getSize(), 3);
+        Assert.assertEquals(t.get(r0.id()), r0);
+        Assert.assertEquals(t.get(r4.id()), r4);
+        Assert.assertEquals(t.get(r5.id()).id(), "5");
     }
 }

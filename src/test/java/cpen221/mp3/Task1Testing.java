@@ -14,11 +14,13 @@ public class Task1Testing {
     @Test
     public void testConstruction() {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>();
+        Assert.assertEquals(t.getSize(), 0);
     }
 
     @Test
     public void testConstruction2() {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(10, 10);
+        Assert.assertEquals(t.getSize(), 0);
     }
 
     @Test
@@ -116,7 +118,8 @@ public class Task1Testing {
 
     @Test
     public void testParams() {
-        FSFTBuffer<TestObject>[] t = new FSFTBuffer[4];
+        FSFTBuffer<TestObject>[] t;
+        t = new FSFTBuffer[4];
         t[0] = new FSFTBuffer<>(0, 0);
         t[1] = new FSFTBuffer<>(1, -1);
         t[2] = new FSFTBuffer<>(-1, 1);
@@ -152,7 +155,7 @@ public class Task1Testing {
 
 
     @Test
-    public void testTimeouts() throws InterruptedException, NoSuchObjectException {
+    public void testTimeouts() throws InterruptedException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
 
         TestObject[] r = new TestObject[]{new TestObject("a"),
@@ -228,6 +231,15 @@ public class Task1Testing {
             Thread.sleep(3000); // f expired
 
             Assert.assertEquals(t.getSize(), 0);
+
+            try {
+                t.get("I love cpen221 :)");
+                // this should throw an exception
+                Assert.fail();
+            } catch (NoSuchObjectException e) {
+                // this should be caught
+            }
+
         } catch (NoSuchObjectException e) {
             // should never reach here
             Assert.fail();
