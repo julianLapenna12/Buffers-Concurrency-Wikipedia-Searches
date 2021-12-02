@@ -3,6 +3,7 @@ package cpen221.mp3;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import cpen221.mp3.fsftbuffer.TestObject;
 import org.junit.Assert;
+import org.junit.Test;
 
 import java.rmi.NoSuchObjectException;
 
@@ -29,6 +30,7 @@ class TestThread implements Runnable {
         }
     }
 
+    @Test
     public void testThreads() throws InterruptedException, NoSuchObjectException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(3, 5);
 

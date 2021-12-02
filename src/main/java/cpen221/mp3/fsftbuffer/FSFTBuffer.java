@@ -18,8 +18,6 @@ public class FSFTBuffer<T extends Bufferable> {
     /* the default timeout value is 3600s */
     public static final int DTIMEOUT = 3600;
 
-    /* TODO: Implement this datatype */
-
     /**
      * Create a buffer with a fixed capacity and a timeout value.
      * Objects in the buffer that have not been refreshed within the
@@ -146,8 +144,8 @@ public class FSFTBuffer<T extends Bufferable> {
     }
 
     /**
-     * Removes objects in the buffer that have exceeded the
-     * timeout time.
+     * Removes objects in the buffer that have not been refreshed
+     * within the timeout time span.
      * @param currentTime the time when this method was called
      */
     synchronized private void pruneMap(long currentTime) {
