@@ -130,7 +130,7 @@ public class FSFTBuffer<T extends Bufferable> {
         ArrayList<DetailedObject> sortedList = new ArrayList<>(masterMap.values());
         sortedList.sort(DetailedObject::compareTo);
 
-        return sortedList.get(sortedList.size() - 1).id();
+        return sortedList.get(0).id();
     }
 
     /**
