@@ -246,7 +246,6 @@ public class Task1Testing {
         }
     }
 
-    /*
     @Test
     public void testTimeouts2() throws InterruptedException {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
@@ -257,13 +256,14 @@ public class Task1Testing {
                 new TestObject("5")};
 
         // Add 0, 1
-        t.put(r[0]);
-        t.put(r[1]);
+        Assert.assertTrue(t.put(r[0]));
+        Assert.assertTrue(t.put(r[1]));
 
         Thread.sleep(2000);
 
-        t.touch("0");
-        t.update(r[0]);
+        Assert.assertTrue(t.touch("0"));
+        Assert.assertTrue(t.update(r[0]));
+        Assert.assertFalse(t.update(r[4]));
 
         Thread.sleep(2100); // 1 expires
 
@@ -273,39 +273,82 @@ public class Task1Testing {
 
         Thread.sleep(10);
 
-        t.put(r[1]); // Add 1
+        Assert.assertTrue(t.put(r[1])); // Add 1
 
         Thread.sleep(50);
 
-        t.put(r[2]); // Add 2
+        Assert.assertTrue(t.put(r[2])); // Add 2
 
         Thread.sleep(50);
 
         Assert.assertEquals(t.getSize(), 3);
-        t.put(r[4]); // Add 4
+        Assert.assertTrue(t.put(r[4])); // Add 4
         Assert.assertEquals(t.getSize(), 4);
 
         Thread.sleep(50);
 
-        t.put(r[5]); // Add 5, 0 removed as max capacity reached
+        Assert.assertTrue(t.put(r[5])); // Add 5, 0 removed as max capacity reached
         Assert.assertEquals(t.getSize(), 4);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[1], r[2], r[4], r[5])));
 
-        Thread.sleep(50);
+        try {
+            for (int i = 1; i < 6; i++) {
+                if (i !=3) Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        t.put(r[3]); // Add 3, 1 removed as max capacity reached
-        Assert.assertEquals(t.getSize(), 4);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<>(Arrays.asList(r[3], r[2], r[4], r[5])));
+            Thread.sleep(50);
 
-        Thread.sleep(4000);
+            Assert.assertTrue(t.put(r[3])); // Add 3, 1 removed as max capacity reached
+            Assert.assertEquals(t.getSize(), 4);
+            for (int i = 2; i < 6; i++) {
+                Assert.assertEquals(t.get(r[i].id()), r[i]);
+            }
 
-        Assert.assertEquals(t.getSize(), 0);
-        Assert.assertEquals(t.getCurrentSet(), new HashSet<TestObject>());
+            Thread.sleep(4000);
+
+            Assert.assertEquals(t.getSize(), 0);
+        } catch (NoSuchObjectException e) {
+            // this should not execute
+            Assert.fail();
+        }
     }
 
     @Test
     public void testNullValues() {
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>(4, 4);
 
+        TestObject r = new TestObject("0");
+
+        Assert.assertFalse(t.put(null));
+        Assert.assertEquals(t.getSize(), 0);
+
+        Assert.assertTrue(t.put(r));
+        Assert.assertFalse(t.put(null));
+        Assert.assertEquals(t.getSize(), 1);
+
+        try {
+            t.get(null);
+            Assert.fail();
+        } catch (NoSuchObjectException e) {
+            // this should execute
+        }
+
+        Assert.assertFalse(t.touch(null));
+        Assert.assertFalse(t.update(null));
+    }
+
+    @Test
+    public void testSameId() {
+        FSFTBuffer<TestObject> t = new FSFTBuffer<>();
+
+        TestObject a = new TestObject("i love cpen221");
+        TestObject b = new TestObject("i love cpen221");
+        TestObject c = new TestObject("i love cpen221");
+
+        Assert.assertTrue(t.put(a));
+        Assert.assertTrue(t.put(b));
+        Assert.assertTrue(t.put(c));
+
+        Assert.assertEquals(1, t.getSize());
     }
 
     /*

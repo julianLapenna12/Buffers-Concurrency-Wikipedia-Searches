@@ -18,8 +18,6 @@ public class Task2Testing {
             object.start();
         }
     }
-
-
 }
 
 class TestThread implements Runnable {
