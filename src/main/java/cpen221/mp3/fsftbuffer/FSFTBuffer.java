@@ -54,19 +54,18 @@ public class FSFTBuffer<T extends Bufferable> {
     synchronized public boolean put(T t) {
         if (t == null) return false;
 
+        // if the capacity <= 0 then nothing can be put in the buffer
+        if (cap <= 0) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        if (cap > 0) {
-            if (masterMap.size() >= cap) {
-                masterMap.remove(getLeastRecentlyAccessed());
-            }
-
-            masterMap.put(t.id(), new DetailedObject(t, time));
-            return true;
+        if (masterMap.size() >= cap) {
+            masterMap.remove(getLeastRecentlyAccessed());
         }
-        // if the capacity <= 0 then nothing can be put in the buffer
-        return false;
+
+        masterMap.put(t.id(), new DetailedObject(t, time));
+        return true;
     }
 
     /**
