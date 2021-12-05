@@ -3,9 +3,7 @@ package cpen221.mp3.wikimediator;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import org.fastily.jwiki.core.Wiki;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 public class WikiMediator {
@@ -33,7 +31,7 @@ public class WikiMediator {
      * Constructor that creates new pageData database
      *
      * @param capacity          Capacity of the database
-     * @param stalenessInterval staleness interval for pages in the database
+     * @param stalenessInterval staleness interval (in seconds) for pages in the database
      */
     public WikiMediator(int capacity, int stalenessInterval) {
         pageData = new FSFTBuffer(capacity, stalenessInterval);
@@ -52,36 +50,92 @@ public class WikiMediator {
     }
 
 
-    List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
+    public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + (timeout * 1000L);
 
-        ArrayList<String> queue = new ArrayList<>();
-        ArrayList<String> searched = new ArrayList<>();
+        // create initial node with no children
+        WikiNode startNode = new WikiNode(pageTitle1, null);
 
-        String page;
-        queue.add(pageTitle1);
+        ArrayList<WikiNode> queue = new ArrayList<>();
+        ArrayList<WikiNode> searched = new ArrayList<>();
+        ArrayList<String> path = new ArrayList<>();
 
+        queue.add(startNode);
+        WikiNode node;
+
+        // add the first node to queue and search
         for (int i = 0; i < queue.size(); i++) {
-            page = queue.get(i);
-            if (page.equals(pageTitle2)) {
-                searched.add(page);
+            node = queue.get(i);
+            node.setChildren(buildNode(node));
+
+            // if the node in queue is the node we want
+            if (node.getId().equals(pageTitle2)) {
+
+                // add it to searched, generate its path and end the search
+                searched.add(node);
+                path = getPath(node);
                 break;
-            } else if (!searched.contains(page)) {
-                searched.add(page);
-                ArrayList<String> pageLinks;
 
-                pageLinks = wiki.getLinksOnPage(page);
-                Collections.sort(pageLinks);
-                queue.addAll(pageLinks);
+                // otherwise if it also hasn't already been searched
+            } else if (!searched.contains(node)) {
+
+                // add it to searched
+                searched.add(node);
+
+                // generate its children nodes
+                /*for (WikiNode w : node.getChildren()) {
+                    w.setChildren(buildNode(w));
+                }*/
+
+                // and add them to the queue
+                queue.addAll(node.getChildren());
             }
+
+            // we don't want to exceed that timeout!
             if (System.currentTimeMillis() > endTime) {
-                throw new TimeoutException("search took too long");
+                throw new TimeoutException("shortest path search timed-out.");
             }
         }
-        if (!searched.contains(pageTitle2)) {
-            return new ArrayList<>();
-        }
-        return searched;
 
+        // if the destination is not in the searched list
+        /*if (searched.stream()
+                .filter(wp -> wp.getId().equals(pageTitle2))
+                .count() != 1
+        ) {
+            // then we have a self contained loop of pages
+            return path;
+        }*/
+
+        return path;
+    }
+
+    /**
+     *
+     * @param page
+     * @return
+     */
+    private ArrayList<WikiNode> buildNode(WikiNode page) {
+        ArrayList<WikiNode> children = new ArrayList<>();
+        for (String s : wiki.getLinksOnPage(page.getId())){
+            children.add(new WikiNode(s, page));
+        }
+
+        return children;
+    }
+
+    /**
+     *
+     * @param w
+     * @return
+     */
+    private ArrayList<String> getPath(WikiNode w) {
+        ArrayList<String> path = new ArrayList<>();
+
+        if (w.getParent() != null) {
+            path.addAll(getPath(w.getParent()));
+        }
+
+        path.add(0, w.getId());
+        return path;
     }
 }
