@@ -49,7 +49,14 @@ public class WikiMediator {
         return (wiki.search(query, limit));
     }
 
-
+    /**
+     *
+     * @param pageTitle1
+     * @param pageTitle2
+     * @param timeout
+     * @return
+     * @throws TimeoutException
+     */
     public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + (timeout * 1000L);
 
@@ -82,12 +89,7 @@ public class WikiMediator {
                 // add it to searched
                 searched.add(node);
 
-                // generate its children nodes
-                /*for (WikiNode w : node.getChildren()) {
-                    w.setChildren(buildNode(w));
-                }*/
-
-                // and add them to the queue
+                // and add its children (in lexicographical order to the queue
                 queue.addAll(node.getChildren());
             }
 
@@ -96,16 +98,9 @@ public class WikiMediator {
                 throw new TimeoutException("shortest path search timed-out.");
             }
         }
-
-        // if the destination is not in the searched list
-        /*if (searched.stream()
-                .filter(wp -> wp.getId().equals(pageTitle2))
-                .count() != 1
-        ) {
-            // then we have a self contained loop of pages
-            return path;
-        }*/
-
+        // return its path which if no path was found
+        // is an empty array list, and otherwise is the shortest
+        // lexicographical path
         return path;
     }
 
@@ -135,7 +130,7 @@ public class WikiMediator {
             path.addAll(getPath(w.getParent()));
         }
 
-        path.add(0, w.getId());
+        path.add(w.getId());
         return path;
     }
 }
