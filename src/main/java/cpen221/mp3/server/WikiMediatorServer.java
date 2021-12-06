@@ -34,33 +34,32 @@ public class WikiMediatorServer {
             maxThreads = n;
             mediator = wikiMediator;
             //TODO read the state of saved data from disk
-            //Start the server
-            serve();
         }
         catch (IOException e){
             System.out.println("Could Not Connect!");
         }
     }
 
-    private void serve () throws IOException {
-        while(true){
-            final Socket socket = serverSocket.accept();
-            Thread handler = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try{
-                        try{
+    public void serve () {
+        while(true) {
+            try {
+                final Socket socket = serverSocket.accept();
+                Thread handler = new Thread(() -> {
+                    try {
+                        try {
                             handle(socket);
-                        }
-                        finally{
+                        } finally {
                             socket.close();
                         }
+                    } catch (IOException ioe) {
+                        throw new RuntimeException();
                     }
-                    catch (IOException ioe){
-                        ioe.printStackTrace();
-                    }
-                }
-            });
+                });
+                handler.start();
+            }
+            catch (IOException ioe){
+                throw new RuntimeException();
+            }
         }
     }
 

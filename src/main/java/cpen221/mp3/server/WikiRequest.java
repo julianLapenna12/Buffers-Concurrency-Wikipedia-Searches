@@ -1,14 +1,14 @@
 package cpen221.mp3.server;
 
-class WikiRequest {
-    String id;
-    String type;
-    String query;
-    String pageTitle;
-    String timeLimitInSeconds;
-    String maxItems;
-    String timeWindowInSeconds;
-    String pageTitle1;
-    String pageTitle2;
-    String timeout;
+public class WikiRequest {
+    public String id;
+    public String type;
+    public String query;
+    public String pageTitle;
+    public String timeLimitInSeconds;
+    public String maxItems;
+    public String timeWindowInSeconds;
+    public String pageTitle1;
+    public String pageTitle2;
+    public String timeout;
 }
