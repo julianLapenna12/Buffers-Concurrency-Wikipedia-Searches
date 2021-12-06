@@ -98,37 +98,53 @@ public class WikiMediator {
     public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + (timeout * 1000L);
 
+        if (pageTitle1.equals(pageTitle2)) return new ArrayList<>(Collections.singleton(pageTitle1));
+
         // create initial node with no children
         WikiNode startNode = new WikiNode(pageTitle1, null);
 
         ArrayList<WikiNode> queue = new ArrayList<>();
-        ArrayList<WikiNode> searched = new ArrayList<>();
+        ArrayList<WikiNode> searchedNodes = new ArrayList<>();
+
+        ArrayList<String> queueStrings = new ArrayList<>();
+        ArrayList<String> nodeLinks;
+        ArrayList<String> searchedStrings = new ArrayList<>();
+
         ArrayList<String> path = new ArrayList<>();
 
         queue.add(startNode);
+        queueStrings.add(pageTitle1);
+
         WikiNode node;
+        String nodeString;
 
         // add the first node to queue and search
-        for (int i = 0; i < queue.size(); i++) {
+        for (int i = 0; i < queueStrings.size(); i++) {
+            nodeString = queueStrings.get(i);
             node = queue.get(i);
-            node.setChildren(buildNode(node));
+            nodeLinks = wiki.getLinksOnPage(nodeString);
 
-            // if the node in queue is the node we want
-            if (node.getId().equals(pageTitle2)) {
+            // if the node's links contain the node we want
+            if (nodeLinks.contains(pageTitle2)) {
 
                 // add it to searched, generate its path and end the search
-                searched.add(node);
+                searchedStrings.add(nodeString);
+                searchedNodes.add(node);
                 path = getPath(node);
                 break;
 
                 // otherwise if it also hasn't already been searched
-            } else if (!searched.contains(node)) {
+            } else if (!searchedStrings.contains(nodeString)) {
 
                 // add it to searched
-                searched.add(node);
+                searchedStrings.add(nodeString);
+                searchedNodes.add(node);
 
-                // and add its children (in lexicographical order to the queue
-                queue.addAll(node.getChildren());
+                // and add its children (in lexicographical order) to the queue
+                queueStrings.addAll(nodeLinks);
+                for (String s : nodeLinks){
+                    queue.add(new WikiNode(s, node));
+                }
             }
 
             // we don't want to exceed that timeout!
@@ -139,21 +155,9 @@ public class WikiMediator {
         // return its path which if no path was found
         // is an empty array list, and otherwise is the shortest
         // lexicographical path
+        if (path.size() == 0) return path;
+        path.add(pageTitle2);
         return path;
-    }
-
-    /**
-     *
-     * @param page
-     * @return
-     */
-    private ArrayList<WikiNode> buildNode(WikiNode page) {
-        ArrayList<WikiNode> children = new ArrayList<>();
-        for (String s : wiki.getLinksOnPage(page.getId())){
-            children.add(new WikiNode(s, page));
-        }
-
-        return children;
     }
 
     /**
@@ -173,7 +177,7 @@ public class WikiMediator {
     }
 
 
-    /*
+    /**
      * @param limit
      * @return
      */
