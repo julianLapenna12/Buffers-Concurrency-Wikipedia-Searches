@@ -1,11 +1,14 @@
 package cpen221.mp3.fsftbuffer;
 
 import java.rmi.NoSuchObjectException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FSFTBuffer<T extends Bufferable> {
 
-    private Map<T, Long> masterMap;
+    private final Map<String, DetailedObject> masterMap = new HashMap<>();
     private final int timeout;
     private final int cap;
 
@@ -14,8 +17,6 @@ public class FSFTBuffer<T extends Bufferable> {
 
     /* the default timeout value is 3600s */
     public static final int DTIMEOUT = 3600;
-
-    /* TODO: Implement this datatype */
 
     /**
      * Create a buffer with a fixed capacity and a timeout value.
@@ -27,10 +28,7 @@ public class FSFTBuffer<T extends Bufferable> {
      *                 be in the buffer before it times out
      */
     public FSFTBuffer(int capacity, int timeout) {
-        // TODO: implement this constructor
-
-        masterMap = new HashMap<>();
-        this.timeout = timeout;
+        this.timeout = 1000 * timeout;
         this.cap = capacity;
     }
 
@@ -45,18 +43,28 @@ public class FSFTBuffer<T extends Bufferable> {
      * Add a value to the buffer.
      * If the buffer is full then remove the least recently accessed
      * object to make room for the new object.
+     *
+     * If objects with the same identifier are added (including adding
+     * the same object multiple times), old objects are replaced
+     * by the newest object with the identifier and they are treated
+     * as they are the first time they're added.
+     * @param t the object to put
+     * @return true if successful, false otherwise
      */
-    public boolean put(T t) {
-        // TODO: implement this method
-        // maybe check if T is the same type as the T given in the creation and if not throw exception
+    synchronized public boolean put(T t) {
+        if (t == null) return false;
+
+        // if the capacity <= 0 then nothing can be put in the buffer
+        if (cap <= 0) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
         if (masterMap.size() >= cap) {
-            masterMap.remove(getOldest());
+            masterMap.remove(getLeastRecentlyAccessed());
         }
 
-        masterMap.put(t, time);
+        masterMap.put(t.id(), new DetailedObject(t, time));
         return true;
     }
 
@@ -66,19 +74,16 @@ public class FSFTBuffer<T extends Bufferable> {
      * buffer. If no such object matches the identifier, an
      * exception will be thrown
      */
-    public T get(String id) throws NoSuchObjectException {
+    synchronized public T get(String id) throws NoSuchObjectException {
+        if (id == null) throw new NoSuchObjectException("All IDs must be non null.");
 
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        for (T t : masterMap.keySet()) {
-            if (t.id().equals(id)) {
-                masterMap.put(t, time);
-                return t;
-            }
-        }
+        if (!masterMap.containsKey(id)) throw new NoSuchObjectException("All IDs must be non null.");
 
-        throw new NoSuchObjectException("No such object exists in the list");
+        masterMap.get(id).setAccessTime(time); // updating the access time
+        return (T) masterMap.get(id).getStoredObject();
     }
 
     /**
@@ -89,16 +94,16 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param id the identifier of the object to "touch"
      * @return true if successful and false otherwise
      */
-    public boolean touch(String id) {
+    synchronized public boolean touch(String id) {
+        if (id == null) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
         // check if given object exists
-        for (T t : masterMap.keySet()) {
-            if (t.id().equals(id)) { // if yes
-                masterMap.put(t, time); // reset time
-                return true;
-            }
+        if (masterMap.containsKey(id)) {
+            masterMap.get(id).setStaleTime(time);
+            return true;
         } // otherwise return false
         return false;
     }
@@ -111,66 +116,49 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param t the object to update
      * @return true if successful and false otherwise
      */
-    public boolean update(T t) {
+    synchronized public boolean update(T t) {
+        if (t == null) return false;
+
         long time = System.currentTimeMillis();
         pruneMap(time);
 
-        for (T t1 : masterMap.keySet()) {
-            if (t1.equals(t)) {
-                masterMap.put(t, time);
-                return true;
-            }
-        }
-        return false;
+        if (!masterMap.containsKey(t.id())) return false;
+
+        // TODO: verify this is correct
+        masterMap.get(t.id()).setStaleTime(time);
+        masterMap.get(t.id()).setStoredObject(t);
+        return true;
     }
 
     /**
-     *
-     * @return
+     * @return the object that has least recently been used
      */
-    private T getOldest() {
-        T oldest = (T) masterMap.keySet().toArray()[0];
+    synchronized private String getLeastRecentlyAccessed() {
+        ArrayList<DetailedObject> sortedList = new ArrayList<>(masterMap.values());
 
-        for (int i = 0; i < masterMap.size(); i++) {
-            if (masterMap.get(oldest) < masterMap.get(masterMap.keySet().toArray()[i])) {
-                oldest = (T) masterMap.keySet().toArray()[i];
-            }
-        }
+        // sorting by access time as defined in DetailedObject.java
+        sortedList.sort(DetailedObject::compareTo);
 
-        return oldest;
+        return sortedList.get(0).id();
     }
 
     /**
-     *
-     * @param currentTime
+     * Removes objects in the buffer that have not been refreshed
+     * within the timeout time span.
+     * @param currentTime the time when this method was called
      */
-    private void pruneMap(long currentTime) {
-        HashMap<T, Long> copy = new HashMap<>(masterMap);
-        HashMap<T, Long> toRemove = new HashMap<>();
-
-        for(Map.Entry<T,Long> entry : copy.entrySet()) {
-            if (currentTime - entry.getValue() > timeout) {
-                toRemove.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        masterMap.entrySet().removeAll(toRemove.entrySet());
+    synchronized private void pruneMap(long currentTime) {
+        // using a stream and lambda function!!! Yay
+        masterMap.keySet().removeAll(masterMap.values().stream()
+                .filter(t -> t.getStaleTime() < currentTime - timeout)
+                .map(DetailedObject::id).collect(Collectors.toSet()));
     }
 
     /**
-     *
-     * @return
+     * @return the number of unexpired objects currently
+     * stored in the buffer.
      */
-    public Set<T> getCurrentSet() {
-        pruneMap(System.currentTimeMillis());
-        return new HashSet<>(masterMap.keySet());
-    }
-
-    /**
-     *
-     * @return
-     */
-    public int getSize() {
+    synchronized public int getSize() {
         pruneMap(System.currentTimeMillis());
         return masterMap.size();
     }
