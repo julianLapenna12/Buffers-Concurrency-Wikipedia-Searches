@@ -19,3 +19,6 @@ dependencies {
     implementation 'org.fastily:jwiki:1.8.0'
 }
 
+test {
+    useJUnitPlatform()
+}

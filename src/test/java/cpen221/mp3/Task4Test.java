@@ -14,24 +14,35 @@ import java.net.Socket;
 
 public class Task4Test {
     private static Gson gson;
+    private static TestClient client;
 
     @BeforeAll
     public static void setUpServer(){
-        WikiMediator mediator = new WikiMediator(100, 32);
+
+        WikiMediator mediator = new WikiMediator(10, 10);
         WikiMediatorServer server = new WikiMediatorServer(6666, 32, mediator);
-        server.serve();
+        Thread serverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                server.serve();
+            }
+        });
+        serverThread.start();
         gson = new Gson();
+        client = new TestClient();
+        client.startConnection("127.0.0.1", 6666);
     }
 
     @Test
-    public static void testClient(){
-        TestClient client = new TestClient();
-        client.startConnection("127.0.0.1", 6666);
+    public void testShutdown(){
         WikiRequest req = new WikiRequest();
         req.id = "1";
         req.type = "stop";
         String message = gson.toJson(req);
-        System.out.println(client.sendMessage(message));
+        String response = client.sendMessage(message);
+        System.out.println(response);
+        //Assertions.assertEquals(response,null);
         Assertions.assertTrue(true);
+
     }
 }

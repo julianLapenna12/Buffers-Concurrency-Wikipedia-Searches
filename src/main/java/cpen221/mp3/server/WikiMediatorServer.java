@@ -91,16 +91,20 @@ public class WikiMediatorServer {
         }
 
         else if (request.type == "stop"){
-
+            shutdown();
         }
 
         return gson.toJson(request, WikiRequest.class);
     }
 
     //Handles shutdown by writing state of Wikimediator to disk
-    private void shutdown() throws IOException {
+    private void shutdown() {
         //TODO Write the state of WikiMediator to disk
-        serverSocket.close();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
