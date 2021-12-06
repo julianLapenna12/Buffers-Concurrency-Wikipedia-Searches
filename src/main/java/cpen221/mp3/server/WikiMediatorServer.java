@@ -66,6 +66,7 @@ public class WikiMediatorServer {
                     });
                     handler.start();
                 }
+                //TODO: Handle too many threads case
             }
             catch (IOException ioe){
                 throw new RuntimeException();
@@ -102,12 +103,13 @@ public class WikiMediatorServer {
         response.id = request.id;
         //Creates new Thread to allow for timeout
         ExecutorService executor = Executors.newSingleThreadExecutor();
+        //TODO: ADD ability to handle other methods from WikiMediator
         Future<String> future = executor.submit(new Callable() {
             @Override
             public String call() throws Exception {
                 switch (request.type){
                     case "search":
-                        response.response = mediator.search(request.query, request.maxItems);
+                        response.response = mediator.search(request.query, request.limit);
                         return "success";
                     case "getPage":
                         response.response = mediator.getPage(request.pageTitle);
@@ -119,7 +121,6 @@ public class WikiMediatorServer {
                         response.response = "command not found";
                         return "failed";
                 }
-
             }
         });
         try{
