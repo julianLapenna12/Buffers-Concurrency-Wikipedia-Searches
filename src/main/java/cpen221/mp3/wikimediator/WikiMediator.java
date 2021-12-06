@@ -5,6 +5,12 @@ import com.google.gson.reflect.TypeToken;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import kotlin.jvm.internal.TypeReference;
 import org.fastily.jwiki.core.Wiki;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Iterator;
+
+import com.google.gson.Gson;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,19 +22,12 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Creates a new instance of wikimediator
+ */
+
 public class WikiMediator {
 
-    /* TODO: Implement this datatype
-
-        You must implement the methods with the exact signatures
-        as provided in the statement for this mini-project
-
-        You must add method signatures even for the methods that you
-        do not plan to implement. You should provide skeleton implementation
-        for those methods, and the skeleton implementation could return
-        values like null.
-
-     */
     private FSFTBuffer pageData;
 
     private List<Long> requests = new ArrayList<Long>();
@@ -46,6 +45,10 @@ public class WikiMediator {
      * @param stalenessInterval staleness interval for pages in the database
      */
     public WikiMediator(int capacity, int stalenessInterval) {
+
+
+
+
         pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
 
         try {
@@ -204,11 +207,12 @@ public class WikiMediator {
      * @return The highest number of searches in a given window
      */
     public int windowedPeakLoad(int timeWindowInSeconds) {
+        requests.add(System.currentTimeMillis());
         int currentTotal = 0;
         int largestTotal = 0;
 
         for (int i = 0; i < requests.size(); i++) {
-            currentTotal = countInWindow(requests, requests.get(i)-timeWindowInSeconds*1000, requests.get(i));
+            currentTotal = countInWindow(requests, requests.get(i)-timeWindowInSeconds*1000, requests.get(i)+1);
             if (currentTotal > largestTotal) {
                 largestTotal = currentTotal;
             }
@@ -218,7 +222,7 @@ public class WikiMediator {
     }
 
     public int windowedPeakLoad() {
-        requests.add(System.currentTimeMillis());
+
         return windowedPeakLoad(30);
     }
 
@@ -226,7 +230,7 @@ public class WikiMediator {
         int count = 0;
 
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i)/1000 >= start && list.get(i)/1000 < end) {
+            if (list.get(i) >= start && list.get(i) < end) {
                 count++;
             }
         }

@@ -53,6 +53,35 @@ public class Task3Testing {
     }
 
     @Test
+    public void testWithinTimeWindow1() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        try {
+            Thread.sleep(4*1000);
+        }
+        catch (Exception e) {
+            System.out.println("Cannot sleep device");
+        }
+
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+
+        Assert.assertEquals(9, testingWikiMediator.windowedPeakLoad(3));
+    }
+
+
+
+    @Test
     public void testReadingFromJson() {
 
         List<Long> testList = new ArrayList<Long>();
