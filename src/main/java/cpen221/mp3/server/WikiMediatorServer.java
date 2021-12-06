@@ -102,6 +102,7 @@ public class WikiMediatorServer {
         WikiResponse response = new WikiResponse();
         response.id = request.id;
         //Creates new Thread to allow for timeout
+        //Code In part take from: https://stackoverflow.com/questions/17233038/how-to-implement-synchronous-method-timeouts-in-java
         ExecutorService executor = Executors.newSingleThreadExecutor();
         //TODO: ADD ability to handle other methods from WikiMediator
         Future<String> future = executor.submit(new Callable() {
@@ -117,6 +118,9 @@ public class WikiMediatorServer {
                     case "zeitgeist":
                         response.response = mediator.zeitgeist(request.limit);
                         return "success";
+                    case "shortestPath":
+                        response.response = mediator.shortestPath(request.pageTitle1, request.pageTitle2, request.timeout);
+                        return "success";
                     default:
                         response.response = "command not found";
                         return "failed";
@@ -125,7 +129,7 @@ public class WikiMediatorServer {
         });
         try{
             if(request.timeout != null){
-                response.status = future.get(2, TimeUnit.SECONDS);
+                response.status = future.get(request.timeout, TimeUnit.SECONDS);
             }
             else{
                 response.status = future.get();

@@ -8,7 +8,7 @@ public class WikiRequest {
     public int timeLimitInSeconds;
     public int maxItems;
     public String timeWindowInSeconds;
-    public int pageTitle1;
+    public String pageTitle1;
     public int limit;
     public String pageTitle2;
     public Integer timeout;
