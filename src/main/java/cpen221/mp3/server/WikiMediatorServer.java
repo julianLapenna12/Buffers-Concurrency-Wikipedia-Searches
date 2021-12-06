@@ -2,6 +2,7 @@ package cpen221.mp3.server;
 
 import com.google.gson.Gson;
 import cpen221.mp3.wikimediator.WikiMediator;
+import jdk.jfr.StackTrace;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,14 +12,15 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class WikiMediatorServer {
 
     private ServerSocket serverSocket;
-    private Gson gson;
     private WikiMediator mediator;
     private int maxThreads;
-    private int numThread;
+    private int numThread = 0;
+    private boolean shutdown = false;
 
     /**
      * Start a server at a given port number, with the ability to process
@@ -36,26 +38,34 @@ public class WikiMediatorServer {
             //TODO read the state of saved data from disk
         }
         catch (IOException e){
-            System.out.println("Could Not Connect!");
+            throw new RuntimeException();
         }
+
     }
 
     public void serve () {
-        while(true) {
-            try {
+        shutdown = false;
+        while(!serverSocket.isClosed()) {
+            if(shutdown){
+                shutdown();
+            }
+            try{
                 final Socket socket = serverSocket.accept();
-                Thread handler = new Thread(() -> {
-                    try {
+                numThread++;
+                if(numThread <= maxThreads){
+                    Thread handler = new Thread(() -> {
                         try {
-                            handle(socket);
-                        } finally {
-                            socket.close();
+                            try {
+                                handle(socket);
+                            } finally {
+                                socket.close();
+                            }
+                        } catch (IOException ioe) {
+                            throw new RuntimeException();
                         }
-                    } catch (IOException ioe) {
-                        throw new RuntimeException();
-                    }
-                });
-                handler.start();
+                    });
+                    handler.start();
+                }
             }
             catch (IOException ioe){
                 throw new RuntimeException();
@@ -76,25 +86,59 @@ public class WikiMediatorServer {
             for (String line = in.readLine(); line != null;
                  line = in.readLine()) {
                     WikiRequest request = gsonReader.fromJson(line, WikiRequest.class);
-                    out.println(handleRequest(request, gsonReader));
+                    //Handles the specific case of stopping the server
+                    if(request.type.equals("stop") ){
+                        WikiResponse response = new WikiResponse(request.id, "bye");
+                        out.println(gsonReader.toJson(response));
+                        shutdown = true;
+                    }
+                    else out.println(handleRequest(request, gsonReader));
             }
         }
     }
 
     private String handleRequest(WikiRequest request, Gson gson){
-        WikiResponse response;
-        if(request.type == "search"){
+        WikiResponse response = new WikiResponse();
+        response.id = request.id;
+        //Creates new Thread to allow for timeout
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> future = executor.submit(new Callable() {
+            @Override
+            public String call() throws Exception {
+                switch (request.type){
+                    case "search":
+                        response.response = mediator.search(request.query, request.maxItems);
+                        return "success";
+                    case "getPage":
+                        response.response = mediator.getPage(request.pageTitle);
+                        return "success";
+                    case "zeitgeist":
+                        response.response = mediator.zeitgeist(request.limit);
+                        return "success";
+                    default:
+                        response.response = "command not found";
+                        return "failed";
+                }
 
+            }
+        });
+        try{
+            if(request.timeout != null){
+                response.status = future.get(2, TimeUnit.SECONDS);
+            }
+            else{
+                response.status = future.get();
+            }
         }
-        else if (request.type == "getPage"){
-
+        catch(TimeoutException e){
+            response.status = "failed";
+            response.response = "Operation timed out";
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-
-        else if (request.type == "stop"){
-            shutdown();
-        }
-
-        return gson.toJson(request, WikiRequest.class);
+        return gson.toJson(response, WikiResponse.class);
     }
 
     //Handles shutdown by writing state of Wikimediator to disk
@@ -103,7 +147,7 @@ public class WikiMediatorServer {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException();
         }
     }
 

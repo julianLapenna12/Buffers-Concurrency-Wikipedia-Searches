@@ -1,7 +1,23 @@
 package cpen221.mp3.server;
 
-class WikiResponse {
-    String id;
-    String status;
-    String response;
+import org.fastily.jwiki.core.Wiki;
+
+public class WikiResponse {
+    public String id;
+    public String status;
+    public Object response;
+    public WikiResponse(){
+
+    }
+
+    public WikiResponse(String id, Object response, String status){
+        this.id = id;
+        this.status = status;
+        this.response = response;
+    }
+
+    public WikiResponse(String id, Object response){
+        this.id = id;
+        this.response = response;
+    }
 }

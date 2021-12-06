@@ -4,6 +4,7 @@ package cpen221.mp3;
 import com.google.gson.Gson;
 import cpen221.mp3.server.WikiMediatorServer;
 import cpen221.mp3.server.WikiRequest;
+import cpen221.mp3.server.WikiResponse;
 import cpen221.mp3.wikimediator.WikiMediator;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -41,8 +42,22 @@ public class Task4Test {
         String message = gson.toJson(req);
         String response = client.sendMessage(message);
         System.out.println(response);
-        //Assertions.assertEquals(response,null);
-        Assertions.assertTrue(true);
+        Assertions.assertEquals("bye", gson.fromJson(response, WikiResponse.class).response);
+    }
 
+    @Test
+    public void testGetPage(){
+        WikiRequest req = buildReq("1", "getPage");
+        req.pageTitle = "Barack Obama";
+        String message = gson.toJson(req);
+        String response = client.sendMessage(message);
+        Assertions.assertEquals("success", gson.fromJson(response, WikiResponse.class).status);
+    }
+
+    public WikiRequest buildReq(String id, String type){
+        WikiRequest req = new WikiRequest();
+        req.id = id;
+        req.type = type;
+        return req;
     }
 }

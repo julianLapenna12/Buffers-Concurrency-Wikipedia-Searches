@@ -5,10 +5,11 @@ public class WikiRequest {
     public String type;
     public String query;
     public String pageTitle;
-    public String timeLimitInSeconds;
-    public String maxItems;
+    public int timeLimitInSeconds;
+    public int maxItems;
     public String timeWindowInSeconds;
-    public String pageTitle1;
+    public int pageTitle1;
+    public int limit;
     public String pageTitle2;
-    public String timeout;
+    public Integer timeout;
 }
