@@ -17,7 +17,7 @@ public class Task4Test {
 
     @BeforeAll
     public static void setUpServer(){
-        WikiMediator mediator = new WikiMediator();
+        WikiMediator mediator = new WikiMediator(100, 32);
         WikiMediatorServer server = new WikiMediatorServer(6666, 32, mediator);
         server.serve();
         gson = new Gson();
