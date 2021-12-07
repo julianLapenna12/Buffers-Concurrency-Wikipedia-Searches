@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -268,6 +269,92 @@ public class WikiMediator {
         }
 
         return count;
+    }
+
+
+    /**
+     *
+     * @param pageTitle1
+     * @param pageTitle2
+     * @param timeout
+     * @return
+     * @throws TimeoutException
+     */
+    public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
+        long endTime = System.currentTimeMillis() + (timeout * 1000L);
+
+        if (pageTitle1.equals(pageTitle2)) return new ArrayList<>(Collections.singleton(pageTitle1));
+
+        // create initial node with no children
+        WikiNode startNode = new WikiNode(pageTitle1, null);
+
+        ArrayList<WikiNode> queue = new ArrayList<>();
+
+        ArrayList<String> queueStrings = new ArrayList<>();
+        ArrayList<String> nodeLinks;
+        ArrayList<String> searchedStrings = new ArrayList<>();
+
+        ArrayList<String> path = new ArrayList<>();
+
+        queueStrings.add(pageTitle1);
+        queue.add(startNode);
+
+        WikiNode node;
+        String nodeString;
+
+        // add the first node to queue and search
+        for (int i = 0; i < queueStrings.size(); i++) {
+            nodeString = queueStrings.get(i);
+            node = queue.get(i);
+            nodeLinks = wiki.getLinksOnPage(nodeString);
+
+            // if the node's links contain the node we want
+            if (nodeLinks.contains(pageTitle2)) {
+
+                // add it to searched, generate its path and end the search
+                searchedStrings.add(nodeString);
+                path = getPath(node);
+                break;
+
+                // otherwise if it also hasn't already been searched
+            } else if (!searchedStrings.contains(nodeString)) {
+
+                // add it to searched
+                searchedStrings.add(nodeString);
+
+                // and add its children (in lexicographical order) to the queue
+                queueStrings.addAll(nodeLinks);
+
+                for (String nodeLink : nodeLinks) {
+                    queue.add(new WikiNode(nodeLink, node));
+                }
+            }
+
+            // we don't want to exceed that timeout!
+            if (System.currentTimeMillis() > endTime) {
+                throw new TimeoutException("shortest path search timed-out.");
+            }
+        }
+        // return its path which if no path was found
+        // is an empty array list, and otherwise is the shortest
+        // lexicographical path
+        if (path.size() == 0) return path;
+        path.add(pageTitle2);
+        return path;
+    }
+
+    /**
+     *
+     * @param w
+     * @return
+     */
+    private ArrayList<String> getPath(WikiNode w) {
+        ArrayList<String> path = new ArrayList<>();
+        if (w.getParent() != null) {
+            path.addAll(getPath(w.getParent()));
+        }
+        path.add(w.getId());
+        return path;
     }
 
     /**
