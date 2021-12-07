@@ -14,7 +14,7 @@ public class Task3Testing {
 
 
     @Test
-    public void testZeitgeist1() {
+    public void testZeitgeistLimit() {
         WikiMediator testingWikiMediator = new WikiMediator(5, 3);
 
         for (int i = 0; i < 3; i++) {
@@ -32,6 +32,101 @@ public class Task3Testing {
         }
 
         Assert.assertEquals(Arrays.asList("grapple", "Car", "Dog"), testingWikiMediator.zeitgeist(3));
+    }
+
+    @Test
+    public void testZeitgeistSimple() {
+        WikiMediator testingWikiMediator = new WikiMediator(5, 3);
+
+        for (int i = 0; i < 3; i++) {
+            testingWikiMediator.getPage("Dog");
+        }
+        for (int i = 0; i < 10; i++) {
+            testingWikiMediator.search("grapple", 3);
+        }
+        for (int i = 0; i < 5; i++) {
+            testingWikiMediator.getPage("Car");
+        }
+        for (int i = 0; i < 2; i++) {
+            testingWikiMediator.getPage("Hamster");
+            testingWikiMediator.getPage("Cat");
+        }
+
+        Assert.assertEquals(Arrays.asList("grapple", "Car", "Dog", "Hamster", "Cat"), testingWikiMediator.zeitgeist(6));
+    }
+
+    @Test
+    public void testZeitgeistSameNumberSearches(){
+        WikiMediator testingWikiMediator = new WikiMediator(5, 3);
+
+        testingWikiMediator.getPage("A");
+        testingWikiMediator.getPage("B");
+        testingWikiMediator.getPage("C");
+        testingWikiMediator.getPage("D");
+        testingWikiMediator.getPage("E");
+        testingWikiMediator.getPage("F");
+        testingWikiMediator.getPage("G");
+        testingWikiMediator.getPage("H");
+
+        Assert.assertEquals(Arrays.asList("H", "G", "F", "E", "D", "C", "B", "A"), testingWikiMediator.zeitgeist(10));
+    }
+
+    @Test
+    public void testZeitgeistSingleElement() {
+        WikiMediator testingWikiMediator = new WikiMediator(5, 3);
+
+        testingWikiMediator.search("key", 3);
+
+        Assert.assertEquals(Arrays.asList("key"), testingWikiMediator.zeitgeist(3));
+    }
+
+    @Test
+    public void windowedPeakLoadTest() {
+        WikiMediator mediator = new WikiMediator(10, 30);
+        mediator.getPage("Dog");
+        mediator.getPage("Cat");
+        mediator.getPage("Mouse");
+        mediator.zeitgeist(2);
+        mediator.trending(10, 5);
+        try {
+            Thread.sleep(1 * 5500);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        mediator.search("Giraffe", 1);
+        mediator.search("Zebra", 1);
+        mediator.search("Lion", 1);
+        //mediator.windowedPeakLoad();
+
+        Assert.assertEquals(5, mediator.windowedPeakLoad(5));
+
+    }
+
+    @Test
+    public void windowedPeakLoadTest_endingLoad() {
+        WikiMediator mediator = new WikiMediator(10, 30);
+        mediator.search("Giraffe", 1);
+        mediator.search("Zebra", 1);
+        mediator.search("Lion", 1);
+        mediator.windowedPeakLoad();
+
+        try {
+            Thread.sleep(8 * 1000);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+        mediator.getPage("Dog");
+        mediator.getPage("Cat");
+        mediator.getPage("Bird");
+        mediator.getPage("Rat");
+        mediator.getPage("Hamster");
+        mediator.getPage("Porcupine");
+        mediator.getPage("Ant");
+        mediator.getPage("Snake");
+
+        Assert.assertEquals(8, mediator.windowedPeakLoad(6));
+
     }
 
     @Test
@@ -131,6 +226,7 @@ public class Task3Testing {
 
         testingWikiMediator.getPage("Hamster");
         testingWikiMediator.search("f", 2);
+        testingWikiMediator.getPage("Cat");
 
         try {
             Thread.sleep(4*1000);
