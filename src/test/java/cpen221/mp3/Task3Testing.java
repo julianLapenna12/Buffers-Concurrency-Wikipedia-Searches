@@ -244,6 +244,7 @@ public class Task3Testing {
         Assert.assertEquals(Arrays.asList("Dog", "Cat", "f"), testingWikiMediator.trending(3, 3));
     }
 
+
     @Test
     public void testReadingFromJson() {
 

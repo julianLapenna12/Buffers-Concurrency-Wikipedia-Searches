@@ -33,6 +33,7 @@ public class WikiMediator {
     requests.size() >= Total number of entries in all requestMap value lists
     Each entry in requestMap values must have corresponding requests entry
     requestMap can never have an empty list as it's corresponding value
+    pageData size must never exceed total entries in requestMap value lists
     */
 
     /*
@@ -46,6 +47,7 @@ public class WikiMediator {
     /*
     Thread Safety Argument
     The datatype is thread safe as all the mutable collections it uses are thread safe.  Any possible data races that may occur between these elements, moreover, are synchronized, so that no data races occur
+    No method supports removal from data structures
     The other variables it uses are strings, which are immutable, and a wiki, which is never mutated or accessed directly
     The FSFT pageData is assumed to be a threadsafe datatype, as per task 2
     */
@@ -59,8 +61,8 @@ public class WikiMediator {
 
     /**
      * Constructor that creates new pageData database, and loads in all previous data (if any exists) from local data.json file used to store all data
-     * @param capacity Capacity of the database.
-     * @param stalenessInterval staleness interval for pages in the database
+     * @param capacity Capacity of the database.  Must be greater than or equal to 1
+     * @param stalenessInterval staleness interval for pages in the database in seconds.  Must be greater than or equal to 1
      */
     public WikiMediator(int capacity, int stalenessInterval) {
         pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
@@ -271,6 +273,33 @@ public class WikiMediator {
         }
 
         return count;
+    }
+
+    /**
+     * Saves working data to a local .json filesystem consisting of two json files
+     */
+    public void writeToFile() {
+
+        try {
+            Gson gson = new Gson();
+
+            Writer writerMap = new FileWriter("local/dataMap.json");
+            new Gson().toJson(requestMap, writerMap);
+            writerMap.close();
+        }
+        catch (Exception e) {
+            System.out.println("Test has Failed - unable to write to map json");
+        }
+
+        try  {
+            Gson gson = new Gson();
+            Writer writerList = new FileWriter("local/dataList.json");
+            new Gson().toJson(requests, writerList);
+            writerList.close();
+        }
+        catch (Exception e) {
+            System.out.println("Test has Failed - unable to write to list json");
+        }
     }
 
 }
