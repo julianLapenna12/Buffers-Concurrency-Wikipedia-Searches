@@ -71,11 +71,7 @@ public class WikiMediator {
             }
         }
 
-        if (requests.size() < totalMapEntries || pageData.getSize() > totalMapEntries) {
-            return false;
-        }
-
-        return true;
+        return requests.size() >= totalMapEntries && pageData.getSize() <= totalMapEntries;
     }
 
     /**
