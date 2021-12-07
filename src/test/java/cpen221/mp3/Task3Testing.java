@@ -12,6 +12,7 @@ import java.util.*;
 
 public class Task3Testing {
 
+
     @Test
     public void testZeitgeist1() {
         WikiMediator testingWikiMediator = new WikiMediator(5, 3);
@@ -79,7 +80,73 @@ public class Task3Testing {
         Assert.assertEquals(9, testingWikiMediator.windowedPeakLoad(3));
     }
 
+    @Test
+    public void testWithinTimeWindow2() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
 
+        testingWikiMediator.search("ubama", 8);
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.search("excellent", 1);
+
+        Assert.assertEquals(8, testingWikiMediator.windowedPeakLoad(3));
+    }
+
+    @Test
+    public void testTrending1() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+
+        try {
+            Thread.sleep(4*1000);
+        }
+        catch(Exception e) {
+
+        }
+
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.getPage("Rat");
+        testingWikiMediator.getPage("Rat");
+
+        Assert.assertEquals(Arrays.asList("Hamster", "Rat"), testingWikiMediator.trending(3, 2));
+    }
+
+    @Test
+    public void testTrending3() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.search("f", 2);
+
+        try {
+            Thread.sleep(4*1000);
+        }
+        catch (Exception e) {
+            System.out.println("Unable to sleep thread");
+        }
+
+        testingWikiMediator.search("f", 10);
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        Assert.assertEquals(Arrays.asList("Dog", "Cat", "f"), testingWikiMediator.trending(3, 3));
+    }
 
     @Test
     public void testReadingFromJson() {
