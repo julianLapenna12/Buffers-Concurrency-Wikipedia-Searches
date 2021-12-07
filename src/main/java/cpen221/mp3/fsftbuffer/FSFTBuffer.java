@@ -71,7 +71,8 @@ public class FSFTBuffer<T extends Bufferable> {
     /**
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the
-     * buffer. If no such object matches the identifier, an
+     * buffer.
+     * @throws NoSuchObjectException If no such object matches the identifier, an
      * exception will be thrown
      */
     synchronized public T get(String id) throws NoSuchObjectException {
@@ -148,7 +149,7 @@ public class FSFTBuffer<T extends Bufferable> {
      * @param currentTime the time when this method was called
      */
     synchronized private void pruneMap(long currentTime) {
-        // using a stream and lambda function!!! Yay
+        // using my first stream and lambda function!!! Yay
         masterMap.keySet().removeAll(masterMap.values().stream()
                 .filter(t -> t.getStaleTime() < currentTime - timeout)
                 .map(DetailedObject::id).collect(Collectors.toSet()));

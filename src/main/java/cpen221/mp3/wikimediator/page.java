@@ -6,7 +6,21 @@ import cpen221.mp3.fsftbuffer.Bufferable;
  * page is used to store wikipedia pages in the FSFT Buffer
  */
 public class page implements Bufferable {
-    /*Used to store the id of the page*/
+
+    /*
+    Rep Invariant
+    !id.equals(null)
+    !id.equals("")
+    !text.equals(null)
+    */
+
+    /*
+    Abstraction Function
+    For any wikipedia page p
+    text = the content of that page represented as a string
+    id = the title of that page, distinct to that page in particular
+    */
+
     public String id;
     public String text;
 

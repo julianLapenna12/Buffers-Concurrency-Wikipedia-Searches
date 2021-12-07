@@ -3,83 +3,99 @@ package cpen221.mp3.wikimediator;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
-import kotlin.jvm.internal.TypeReference;
 import org.fastily.jwiki.core.Wiki;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Iterator;
-
-import com.google.gson.Gson;
-
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
- * Creates a new instance of wikimediator
+ * This class mediates interactions between the user and the api.  It also keeps track of certain metrics, like the most searched pages and searches.
  */
 
 public class WikiMediator {
 
+    /*
+    Rep Invariant
+    requests.size() >= Total number of entries in all requestMap value lists
+    Each entry in requestMap values must have corresponding requests entry
+    requestMap can never have an empty list as it's corresponding value
+    pageData size must never exceed total entries in requestMap value lists
+    */
+
+
+    /*
+    Abstraction function
+    This class represents a mediator between a user and wikipedia
+    pageData represents a finite size finite time buffer used for caching previously accessed pages
+    requests represents all the previous requests made to the mediator, by the time they were requested, in milliseconds, since 12:00am UTC January 1st, 1970
+    requestMap maps a certain request to the number of times it was requested, as well as when those requests were initiated.  Similair to requests, these times are stored as milliseconds since 12:00am UTC January 1st, 1970
+    */
+
+    /*
+    Thread Safety Argument
+    The datatype is thread safe as all the mutable collections it uses are thread safe.  Any possible data races that may occur between these elements, moreover, are synchronized, so that no data races occur
+    No method supports removal from data structures
+    The other variables it uses are strings, which are immutable, and a wiki, which is never mutated or accessed directly
+    The FSFT pageData is assumed to be a threadsafe datatype, as per task 2
+    */
+
     private FSFTBuffer pageData;
 
-    private List<Long> requests = new ArrayList<Long>();
+    private List<Long> searchRequests = new ArrayList<Long>();
 
+    private List<Long> requests = new ArrayList<Long>();
     private Map<String, ArrayList<Long>> requestMap = new HashMap<String, ArrayList<Long>>();
+
+    private final Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
     private String requestMapFileLocation = "local/dataMap.json";
     private String requestListFileLocation = "local/dataList.json";
 
-    private Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
-
     /**
      * Constructor that creates new pageData database, and loads in all previous data (if any exists) from local data.json file used to store all data
-     * @param capacity Capacity of the database
-     * @param stalenessInterval staleness interval for pages in the database
+     * @param capacity Capacity of the database.  Must be greater than or equal to 1
+     * @param stalenessInterval staleness interval for pages in the database in seconds.  Must be greater than or equal to 1
      */
     public WikiMediator(int capacity, int stalenessInterval) {
-
-
-
-
         pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
 
-        try {
-            Gson gson = new Gson();
+        synchronized (this) {
+            try {
+                Gson gson = new Gson();
 
-            Reader readerMap = Files.newBufferedReader(Paths.get(requestMapFileLocation));
-            requestMap = gson.fromJson(readerMap, new TypeToken<Map<String, List<Long>>>(){}.getType());
-            readerMap.close();
+                Reader readerMap = Files.newBufferedReader(Paths.get(requestMapFileLocation));
+                try {
+                    requestMap = gson.fromJson(readerMap, new TypeToken<Map<String, List<Long>>>() {
+                    }.getType());
+                } catch (NullPointerException e) {
+                    requestMap = Collections.synchronizedMap(new HashMap<String, ArrayList<Long>>());
+                }
+                readerMap.close();
 
-            //By default, program will read data from json file as a double, and thus data needs to be converted into a long
+                Reader readerList = Files.newBufferedReader(Paths.get(requestListFileLocation));
+                requests = gson.fromJson(readerList, new TypeToken<List<Long>>() {
+                }.getType());
+                readerList.close();
 
-
-            Reader readerList = Files.newBufferedReader(Paths.get(requestListFileLocation));
-            requests = gson.fromJson(readerList, new TypeToken<List<Long>>(){}.getType());
-            readerList.close();
-
-
-
+            } catch (Exception e) {
+                System.out.println("Unable to read data from JSON file");
+            }
         }
-        catch (Exception e) {
-
-        }
-
     }
 
     /**
-     * Given a query, return up to limit the number of pages that match the query
-     *
-     * @param query query to search in wikipedia
-     * @param limit number of elements that will be returned
+     * @param query query to search in wikipedia.  Cannot be an empty string
+     * @param limit number of elements that will be returned.  Must be greater than or equal to 1
      * @return A list of all the wikipedia pages matching the query
      */
     public List<String> search(String query, int limit) {
@@ -88,14 +104,15 @@ public class WikiMediator {
         List<Long> defaultList = new ArrayList<Long>();
         defaultList.add(System.currentTimeMillis());
 
-        if (requestMap.containsKey(query)) {
-            requestMap.get(query).add(System.currentTimeMillis());
-        }
-        else {
-            requestMap.put(query, (ArrayList<Long>) defaultList);
+        synchronized (this) {
+            if (requestMap.containsKey(query)) {
+                requestMap.get(query).add(System.currentTimeMillis());
+            } else {
+                requestMap.put(query, (ArrayList<Long>) defaultList);
+            }
         }
 
-        List<String> results = new ArrayList<String>();
+        List<String> results;
         results = wiki.search(query, limit);
         return (results);
     }
@@ -103,7 +120,7 @@ public class WikiMediator {
     /**
      * Given a page title, return the text of the page
      * @param pageTitle Page title of data to return
-     * @return String of the text of the page
+     * @return String of the text of the page.  Returns an empty string if no corresponding wikipedia page is found
      */
     public String getPage(String pageTitle) {
         requests.add(System.currentTimeMillis());
@@ -111,117 +128,34 @@ public class WikiMediator {
         List<Long> defaultList = new ArrayList<Long>();
         defaultList.add(System.currentTimeMillis());
 
-        if (requestMap.containsKey(pageTitle)) {
-            requestMap.get(pageTitle).add(System.currentTimeMillis());
-        }
-        else {
-            requestMap.put(pageTitle, (ArrayList<Long>) defaultList);
+        synchronized (this) {
+            if (requestMap.containsKey(pageTitle)) {
+                requestMap.get(pageTitle).add(System.currentTimeMillis());
+            } else {
+                requestMap.put(pageTitle, (ArrayList<Long>) defaultList);
+            }
         }
 
         String result;
         page currentPage;
 
+        //Try to find pageTitle in cache.  If not cached, find page in wikipedia and cache page
         try {
-            currentPage = (page)pageData.get(pageTitle);
+            currentPage = (page) pageData.get(pageTitle);
             result = currentPage.getText();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             currentPage = new page(pageTitle, wiki.getPageText(pageTitle));
             result = currentPage.getText();
             pageData.put(currentPage);
         }
+
         return result;
     }
 
     /**
-     *
-     * @param pageTitle1
-     * @param pageTitle2
-     * @param timeout
-     * @return
-     * @throws TimeoutException
-     */
-    public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
-        long endTime = System.currentTimeMillis() + (timeout * 1000L);
-
-        // create initial node with no children
-        WikiNode startNode = new WikiNode(pageTitle1, null);
-
-        ArrayList<WikiNode> queue = new ArrayList<>();
-        ArrayList<WikiNode> searched = new ArrayList<>();
-        ArrayList<String> path = new ArrayList<>();
-
-        queue.add(startNode);
-        WikiNode node;
-
-        // add the first node to queue and search
-        for (int i = 0; i < queue.size(); i++) {
-            node = queue.get(i);
-            node.setChildren(buildNode(node));
-
-            // if the node in queue is the node we want
-            if (node.getId().equals(pageTitle2)) {
-
-                // add it to searched, generate its path and end the search
-                searched.add(node);
-                path = getPath(node);
-                break;
-
-                // otherwise if it also hasn't already been searched
-            } else if (!searched.contains(node)) {
-
-                // add it to searched
-                searched.add(node);
-
-                // and add its children (in lexicographical order to the queue
-                queue.addAll(node.getChildren());
-            }
-
-            // we don't want to exceed that timeout!
-            if (System.currentTimeMillis() > endTime) {
-                throw new TimeoutException("shortest path search timed-out.");
-            }
-        }
-        // return its path which if no path was found
-        // is an empty array list, and otherwise is the shortest
-        // lexicographical path
-        return path;
-    }
-
-    /**
-     *
-     * @param page
-     * @return
-     */
-    private ArrayList<WikiNode> buildNode(WikiNode page) {
-        ArrayList<WikiNode> children = new ArrayList<>();
-        for (String s : wiki.getLinksOnPage(page.getId())){
-            children.add(new WikiNode(s, page));
-        }
-
-        return children;
-    }
-
-    /**
-     *
-     * @param w
-     * @return
-     */
-    private ArrayList<String> getPath(WikiNode w) {
-        ArrayList<String> path = new ArrayList<>();
-
-        if (w.getParent() != null) {
-            path.addAll(getPath(w.getParent()));
-        }
-
-        path.add(w.getId());
-        return path;
-    }
-
-
-    /*
-     * @param limit
-     * @return
+     * Returns the most common search queries and getPage requests as a sorted list since the start of Wikimediator
+     * @param limit Maximum number of elements to return.  Must be greater than or equal to 1
+     * @return A list of search queries and getPage requests of size limit sorted in decreasing order by the number of times they were requested
      */
     public List<String> zeitgeist(int limit) {
         requests.add(System.currentTimeMillis());
@@ -229,8 +163,10 @@ public class WikiMediator {
         Map<String, Integer> listToSort = new HashMap<String, Integer>();
 
         //Creates a list to sort that simply concatenates the list of times into a single number representing number of searches
-        for (int i = 0; i < requestMap.size(); i++) {
-            listToSort.put((String)requestMap.keySet().toArray()[i], requestMap.get(requestMap.keySet().toArray()[i]).size());
+        synchronized (this) {
+            for (int i = 0; i < requestMap.size(); i++) {
+                listToSort.put((String) requestMap.keySet().toArray()[i], requestMap.get(requestMap.keySet().toArray()[i]).size());
+            }
         }
 
         //Creates a return list of strings based on the number of searches for each entry
@@ -250,8 +186,8 @@ public class WikiMediator {
 
     /**
      * Finds the most searched items in the past timeLimitInSeconds seconds
-     * @param timeLimitInSeconds Amount of seconds since current time to begin accepting searches as valid
-     * @param maxItems Maximum number of items to return
+     * @param timeLimitInSeconds Amount of seconds since current time to begin accepting searches as valid.  Must be greater than or equal to 1
+     * @param maxItems Maximum number of items to return.  Must be greater than or equal to 1
      * @return A list in decreasing order of searches based on the number of times they have been searched in the past timeLimitInSeconds seconds
      */
     public List<String> trending(int timeLimitInSeconds, int maxItems) {
@@ -260,14 +196,15 @@ public class WikiMediator {
         Map<String, Integer> listToSort = new HashMap<String, Integer>();
 
         //Creates a list to sort by taking out all entries not within the time window, and returning a map with queries and the respective number of entries
-        for (int i = 0; i < requestMap.size(); i++) {
-            for (int j = 0; j < requestMap.get(requestMap.keySet().toArray()[i]).size(); j++) {
-                if ((long)(requestMap.get(requestMap.keySet().toArray()[i]).get(j))/1000 > System.currentTimeMillis()/1000 - timeLimitInSeconds) {
-                    if (!listToSort.containsKey(requestMap.keySet().toArray()[i])) {
-                        listToSort.put((String) requestMap.keySet().toArray()[i], 1);
-                    }
-                    else {
-                        listToSort.put((String) requestMap.keySet().toArray()[i], listToSort.get(requestMap.keySet().toArray()[i])+1);
+        synchronized (this) {
+            for (int i = 0; i < requestMap.size(); i++) {
+                for (int j = 0; j < requestMap.get(requestMap.keySet().toArray()[i]).size(); j++) {
+                    if ((long) (requestMap.get(requestMap.keySet().toArray()[i]).get(j)) > System.currentTimeMillis() - timeLimitInSeconds*1000) {
+                        if (!listToSort.containsKey(requestMap.keySet().toArray()[i])) {
+                            listToSort.put((String) requestMap.keySet().toArray()[i], 1);
+                        } else {
+                            listToSort.put((String) requestMap.keySet().toArray()[i], listToSort.get(requestMap.keySet().toArray()[i]) + 1);
+                        }
                     }
                 }
             }
@@ -289,39 +226,177 @@ public class WikiMediator {
     }
 
     /**
-     * Returns the largest number of searches in a given time window
-     * @param timeWindowInSeconds Window for which to search in
-     * @return The highest number of searches in a given window
+     * Returns the largest number of requests in a given time window
+     * @param timeWindowInSeconds Window for which to search in.  Must be greater than or equal to 1
+     * @return The highest number of requests in a given window
      */
     public int windowedPeakLoad(int timeWindowInSeconds) {
+        requests.add(System.currentTimeMillis());
+
         requests.add(System.currentTimeMillis());
         int currentTotal = 0;
         int largestTotal = 0;
 
-        for (int i = 0; i < requests.size(); i++) {
-            currentTotal = countInWindow(requests, requests.get(i)-timeWindowInSeconds*1000, requests.get(i)+1);
-            if (currentTotal > largestTotal) {
-                largestTotal = currentTotal;
+        synchronized (this) {
+            for (int i = 0; i < requests.size(); i++) {
+                currentTotal = countInWindow(requests, requests.get(i) - timeWindowInSeconds * 1000, requests.get(i) + 1);
+                if (currentTotal > largestTotal) {
+                    largestTotal = currentTotal;
+                }
             }
         }
 
         return largestTotal;
     }
 
+    /**
+     * Returns the largest number of requests in a 30 second time window
+     * @return Maximum number of requests, as an integer, within 30 seconds of one another
+     */
     public int windowedPeakLoad() {
-
         return windowedPeakLoad(30);
     }
 
+    /**
+     * Used to calculate the number of elements in an array of longs within a time window
+     * @param list List for which to search in
+     * @param start Lower bound on Long values
+     * @param end Upper bound on Long values
+     * @return The number of Long values within the lower and upper bounds
+     */
     private int countInWindow (List<Long> list, Long start, Long end) {
         int count = 0;
 
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) >= start && list.get(i) < end) {
+        for (Long element : list) {
+            if (element >= start && element < end) {
                 count++;
             }
         }
 
         return count;
+    }
+
+    /**
+     *
+     * @param pageTitle1 The title of the source Wikipedia page
+     * @param pageTitle2 The title of the destination Wikipedia page
+     * @param timeout the duration in seconds that the search may last
+     * @return An ordered list of Wikipedia pages that can be traversed by
+     *         internal Wikipedia links to arrive at the destination from
+     *         the source (inclusive). The list provides the shortest possible path
+     *         and in the case of a tie, the lowest lexicographical path
+     * @throws TimeoutException If the operation is not successful in the
+     *                          allotted time an exception will be thrown
+     */
+    public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
+        long endTime = System.currentTimeMillis() + (timeout * 1000L);
+
+        // for the case of the start and end being the same pages
+        // and when there is a page that nothing links to
+        if (pageTitle1.equals(pageTitle2)) return new ArrayList<>(Collections.singleton(pageTitle1));
+        if (wiki.whatLinksHere(pageTitle2).size() == 0) return new ArrayList<>();
+
+        // create initial node with no parent
+        WikiNode startNode = new WikiNode(pageTitle1, null);
+
+        // Arraylist to store the nodes which create the path upon finding the destination
+        ArrayList<WikiNode> queue = new ArrayList<>();
+
+        // Arraylists to store the queue, searched and temp storage of the page links
+        ArrayList<String> queueStrings = new ArrayList<>();
+        ArrayList<String> nodeLinks;
+        ArrayList<String> searchedStrings = new ArrayList<>();
+
+        // Arraylist storing the path that will be returned
+        ArrayList<String> path = new ArrayList<>();
+
+        queueStrings.add(pageTitle1);
+        queue.add(startNode);
+
+        WikiNode node;
+        String nodeString;
+
+        // add the first node to queue and search
+        for (int i = 0; i < queueStrings.size(); i++) {
+            nodeString = queueStrings.get(i);
+            node = queue.get(i);
+            nodeLinks = wiki.getLinksOnPage(nodeString);
+
+            // if the node's links contain the node we want
+            if (nodeLinks.contains(pageTitle2)) {
+
+
+                // generate its path and end the search
+                path = getPath(node);
+                break;
+
+                // otherwise, if it also hasn't already been searched
+            } else if (!searchedStrings.contains(nodeString)) {
+
+                // add it to searched
+                searchedStrings.add(nodeString);
+
+                // add its children (in lexicographical order) to the queue
+                queueStrings.addAll(nodeLinks);
+
+                for (String s : nodeLinks) { // and add its children as nodes to their queue
+                    queue.add(new WikiNode(s, node));
+                }
+            }
+
+            // we don't want to exceed that timeout!
+            if (System.currentTimeMillis() > endTime) {
+                throw new TimeoutException("shortest path search timed-out.");
+            }
+        }
+        // return its path which if no path was found is an empty array list,
+        // and otherwise is the shortest lexicographical path
+        if (path.size() == 0) return path;
+        path.add(pageTitle2);
+        return path;
+    }
+
+    /**
+     * Given a child WikiNode, traverse up the tree of its parents to
+     * find a path from the upper-most parent to the given child WikiNode
+     * @param w the child WikiNode
+     * @return a list of IDs including the parent and child nodes that
+     *         represent a path that can be taken from the parent Wikipedia
+     *         page to arrive at the child Wikipedia page
+     */
+    private ArrayList<String> getPath(WikiNode w) {
+        ArrayList<String> path = new ArrayList<>();
+        if (w.getParent() != null) {
+            path.addAll(getPath(w.getParent()));
+        }
+        path.add(w.getId());
+        return path;
+    }
+
+    /**
+     * Saves working data to a local .json filesystem consisting of two json files
+     */
+    public void writeToFile() {
+
+        try {
+            Gson gson = new Gson();
+
+            Writer writerMap = new FileWriter("local/dataMap.json");
+            new Gson().toJson(requestMap, writerMap);
+            writerMap.close();
+        }
+        catch (Exception e) {
+            System.out.println("Test has Failed - unable to write to map json");
+        }
+
+        try  {
+            Gson gson = new Gson();
+            Writer writerList = new FileWriter("local/dataList.json");
+            new Gson().toJson(requests, writerList);
+            writerList.close();
+        }
+        catch (Exception e) {
+            System.out.println("Test has Failed - unable to write to list json");
+        }
     }
 }
