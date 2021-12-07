@@ -10,16 +10,23 @@ public class WikiNode {
 
     /*
     Rep Invariant
-    this.id is the distinct identifier and is never null
-    this.id always has a corresponding Wikipedia page with a matching title
+
+    id is the distinct identifier and is never null
+
+    id always has a corresponding Wikipedia page with a matching title
         (unless it was a title passed by the user that doesn't exist)
-    this.parent is null if and only if it is the source of the search path to another Wikipedia page
+
+    If the id of two WikiNodes are the same, then they are the same WikiNode
+
+    parent is null if and only if it is the source of the search path to another Wikipedia page
     */
 
 
     /*
     Abstraction function
-    This class represents a Wikipedia page that can be accessed by internal link from its parent page
+
+    This class represents a Wikipedia page in a graph of Wikipedia pages
+        that can be accessed by internal link from its parent page
     */
 
     private final WikiNode parent;

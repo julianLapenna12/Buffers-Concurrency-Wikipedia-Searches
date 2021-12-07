@@ -12,16 +12,28 @@ public class DetailedObject<T extends Bufferable> implements Comparable {
 
     /*
     Rep Invariant
+
+    storedObject is not null and has a distinct identifier and if two
+        DetailedObjects have the same storedObject, then the DetailedObjects are the same
+
     staleTime <= currentTimeInMillis() at all times
+
     accessTime <= currentTimeInMillis() at all times
-    storedObject is not null and has a distinct identifier
     */
 
 
     /*
     Abstraction function
-    This class represents a wrapper for the bufferable object passed by the user
-    that serves to track the object and its use time and expiry time.
+
+    This class represents a wrapper for the bufferable object added by the user
+    to a buffer. It serves to track the object and its use time and expiry time.
+
+    storedObject is the bufferable object the user wants to add the buffer
+        storedObject.id() is it's unique identifier
+    staleTime is flag marker such that if the current time exceeds the staleTime
+        by more than the timeout, the object is considered to be expired
+    accessTime is a flag marker that tracks the last point in time that the
+        object was used
     */
 
     private T storedObject;

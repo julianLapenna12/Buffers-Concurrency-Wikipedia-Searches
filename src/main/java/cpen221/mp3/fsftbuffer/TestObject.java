@@ -8,12 +8,16 @@ public class TestObject implements Bufferable {
 
     /*
     Rep Invariant
-    Every TestObject must have an identifier
+
+    id != null
+
+    If two TestObjects have the same id, they are the same TestObject
     */
 
 
     /*
     Abstraction function
+
     This class represents a random bufferable object that is used to test
     FSFTBuffers. Each distinct TestObject has a distinct identifier.
     */

@@ -19,33 +19,45 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
- * This class mediates interactions between the user and the api.  It also keeps track of certain metrics, like the most searched pages and searches.
+ * This class mediates interactions between the user and the api. It also keeps track of certain metrics,
+ * like the most searched pages and searches.
  */
 
 public class WikiMediator {
 
     /*
     Rep Invariant
+
     requests.size() >= Total number of entries in all requestMap value lists
+
     Each entry in requestMap values must have corresponding requests entry
+
     requestMap can never have an empty list as it's corresponding value
+
     pageData size must never exceed total entries in requestMap value lists
     */
 
     /*
     Abstraction function
+
     This class represents a mediator between a user and wikipedia
     pageData represents a finite size finite time buffer used for caching previously accessed pages
-    requests represents all the previous requests made to the mediator, by the time they were requested, in milliseconds, since 12:00am UTC January 1st, 1970
-    requestMap maps a certain request to the number of times it was requested, as well as when those requests were initiated.  Similair to requests, these times are stored as milliseconds since 12:00am UTC January 1st, 1970
+    requests represents all the previous requests made to the mediator, by the time they were requested,
+        in milliseconds, since 12:00am UTC January 1st, 1970
+    requestMap maps a certain request to the number of times it was requested,
+        as well as when those requests were initiated.  Similar to requests, these times are
+        stored as milliseconds since 12:00am UTC January 1st, 1970
     */
 
     /*
     Thread Safety Argument
-    The datatype is thread safe as all the mutable collections it uses are thread safe.  Any possible data races that may occur between these elements, moreover, are synchronized, so that no data races occur
+    The datatype is thread safe as all the mutable collections it uses are thread safe.
+        Any possible data races that may occur between these elements, moreover, are synchronized,
+        so that no data races occur
     No method supports removal from data structures
-    The other variables it uses are strings, which are immutable, and a wiki, which is never mutated or accessed directly
-    The FSFT pageData is assumed to be a threadsafe datatype, as per task 2
+    The other variables it uses are strings, which are immutable, and a wiki,
+        which is never mutated or accessed directly
+    The FSFTBuffer pageData is assumed to be a threadsafe datatype, as per task 2
     */
 
     private final FSFTBuffer pageData;

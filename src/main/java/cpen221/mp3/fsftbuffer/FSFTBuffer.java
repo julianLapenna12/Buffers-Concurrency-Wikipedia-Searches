@@ -15,13 +15,22 @@ public class FSFTBuffer<T extends Bufferable> {
 
     /*
     Rep Invariant
-    // TODO write this
-    */
 
+    0 <= masterMap.size <= cap (unless cap < 0, then masterMap.size() == 0)
+
+    masterMap != null and none of its contents (Strings or DetailedObjects) either
+    */
 
     /*
     Abstraction function
-    // TODO write this
+
+    This class represents a dynamic collection of objects. The collection has a finite size
+    and a finite time limit. Objects that have exceeded the time limit will be removed and
+    objects that are added when the collection is full take the place of the least
+    recently used object currently in the collection.
+
+    Each key in masterMap is the unique identifier of an object and the value is
+        a DetailedObject containing an object that has been added by the user
     */
 
     private final Map<String, DetailedObject> masterMap = new HashMap<>();
