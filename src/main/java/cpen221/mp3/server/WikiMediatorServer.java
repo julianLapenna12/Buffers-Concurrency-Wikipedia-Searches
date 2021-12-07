@@ -56,7 +56,6 @@ public class WikiMediatorServer {
                         try {
                             handle(socket);
                         } finally {
-                            numThread--;
                             socket.close();
                         }
                     } catch (IOException ioe) {
@@ -64,6 +63,7 @@ public class WikiMediatorServer {
                     }
                 });
                 handler.start();
+                numThread--;
             }
             catch (IOException ioe){
                 throw new RuntimeException();

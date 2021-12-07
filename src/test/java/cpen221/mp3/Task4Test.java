@@ -22,7 +22,7 @@ public class Task4Test {
     public static void setUpServer(){
 
         WikiMediator mediator = new WikiMediator(10, 10);
-        WikiMediatorServer server = new WikiMediatorServer(6666, 32, mediator);
+        WikiMediatorServer server = new WikiMediatorServer(6666, 4, mediator);
         Thread serverThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -92,6 +92,48 @@ public class Task4Test {
         Assertions.assertEquals("success", mes.status);
     }
 
+    @Test
+    public void searchReqManyClient(){
+        TestClient client2 = buildClient("127.0.0.1", 6666);
+        TestClient client3 = buildClient("127.0.0.1", 6666);
+        TestClient client4 = buildClient("127.0.0.1", 6666);
+        TestClient client5 = buildClient("127.0.0.1", 6666);
+        WikiResponse mes = makeRequest(client, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes3 = makeRequest(client3, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes4 = makeRequest(client4, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes5 = makeRequest(client5, buildSearchRequest("1", "Barack Obama", 5));
+
+        Assertions.assertEquals("success", mes.status);
+        Assertions.assertEquals("success", mes2.status);
+        Assertions.assertEquals("success", mes3.status);
+        Assertions.assertEquals("success", mes4.status);
+        Assertions.assertEquals("success", mes5.status);
+
+    }
+
+    @Test
+    public void searchReqManyClientSD(){
+        TestClient client2 = buildClient("127.0.0.1", 6666);
+        TestClient client3 = buildClient("127.0.0.1", 6666);
+        TestClient client4 = buildClient("127.0.0.1", 6666);
+        TestClient client5 = buildClient("127.0.0.1", 6666);
+        WikiResponse mes = makeRequest(client, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes3 = makeRequest(client3, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes4 = makeRequest(client4, buildSearchRequest("1", "Barack Obama", 5));
+        client2.stopConnection();
+        WikiResponse mes5 = makeRequest(client5, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes6 = makeRequest(client4, buildShutdown("1"));
+
+        Assertions.assertEquals("success", mes.status);
+        Assertions.assertEquals("success", mes2.status);
+        Assertions.assertEquals("success", mes3.status);
+        Assertions.assertEquals("success", mes4.status);
+        Assertions.assertEquals("success", mes5.status);
+    }
+
+
     public WikiRequest buildReq(String id, String type){
         WikiRequest req = new WikiRequest();
         req.id = id;
@@ -128,9 +170,14 @@ public class Task4Test {
     }
 
     public WikiRequest buildTrending(String id, int timeLimit, int maxItems){
-        WikiRequest req = buildReq(id, "zeitgeist");
+        WikiRequest req = buildReq(id, "trending");
         req.timeLimitInSeconds = timeLimit;
         req.maxItems = maxItems;
+        return req;
+    }
+
+    public WikiRequest buildShutdown(String id){
+        WikiRequest req = buildReq(id, "stop");
         return req;
     }
 
