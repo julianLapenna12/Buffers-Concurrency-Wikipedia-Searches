@@ -2,8 +2,6 @@ package cpen221.mp3.server;
 
 import com.google.gson.Gson;
 import cpen221.mp3.wikimediator.WikiMediator;
-import jdk.jfr.StackTrace;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.concurrent.*;
 
 public class WikiMediatorServer {
@@ -50,23 +47,24 @@ public class WikiMediatorServer {
                 shutdown();
             }
             try{
+                while(numThread >= maxThreads){
+                    //Blocks until a thread is free if there are too many threads
+                }
                 final Socket socket = serverSocket.accept();
                 numThread++;
-                if(numThread <= maxThreads){
-                    Thread handler = new Thread(() -> {
+                Thread handler = new Thread(() -> {
+                    try {
                         try {
-                            try {
-                                handle(socket);
-                            } finally {
-                                socket.close();
-                            }
-                        } catch (IOException ioe) {
-                            throw new RuntimeException();
+                            handle(socket);
+                        } finally {
+                            numThread--;
+                            socket.close();
                         }
-                    });
-                    handler.start();
-                }
-                //TODO: Handle too many threads case
+                    } catch (IOException ioe) {
+                        throw new RuntimeException();
+                    }
+                });
+                handler.start();
             }
             catch (IOException ioe){
                 throw new RuntimeException();
@@ -104,7 +102,6 @@ public class WikiMediatorServer {
         //Creates new Thread to allow for timeout
         //Code In part take from: https://stackoverflow.com/questions/17233038/how-to-implement-synchronous-method-timeouts-in-java
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        //TODO: ADD ability to handle other methods from WikiMediator
         Future<String> future = executor.submit(new Callable() {
             @Override
             public String call() throws Exception {
@@ -121,12 +118,22 @@ public class WikiMediatorServer {
                     case "shortestPath":
                         response.response = mediator.shortestPath(request.pageTitle1, request.pageTitle2, request.timeout);
                         return "success";
+                    case "trending":
+                        response.response = mediator.trending(request.timeLimitInSeconds, request.maxItems);
+                        return "success";
+                    case "windowedPeakLoad":
+                        if(request.timeWindowInSeconds != null){
+                            response.response = mediator.windowedPeakLoad(request.timeWindowInSeconds);
+                        }
+                        else response.response = mediator.windowedPeakLoad();
+                        return "success";
                     default:
                         response.response = "command not found";
                         return "failed";
                 }
             }
         });
+        //Run thread and check for timeout
         try{
             if(request.timeout != null){
                 response.status = future.get(request.timeout, TimeUnit.SECONDS);
