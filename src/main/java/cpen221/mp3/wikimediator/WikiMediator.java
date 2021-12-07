@@ -5,15 +5,13 @@ import org.fastily.jwiki.core.Wiki;
 
 import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-
 
 public class WikiMediator {
 
     /* TODO: Implement this datatype
 
         You must implement the methods with the exact signatures
-        as provided in the statement for this mini-project
+        as provided in the statement for this mini-project.
 
         You must add method signatures even for the methods that you
         do not plan to implement. You should provide skeleton implementation
@@ -24,8 +22,8 @@ public class WikiMediator {
     private FSFTBuffer pageData;
 
     private List<Long> searchRequests = new ArrayList<Long>();
+
     private List<Long> requests = new ArrayList<Long>();
-    private Map<String, Integer> requestMap = new HashMap<String, Integer>();
 
     private Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
@@ -36,7 +34,7 @@ public class WikiMediator {
      * @param stalenessInterval staleness interval (in seconds) for pages in the database
      */
     public WikiMediator(int capacity, int stalenessInterval) {
-        pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
+        pageData = new FSFTBuffer(capacity, stalenessInterval);
     }
 
     /**
@@ -48,43 +46,7 @@ public class WikiMediator {
      */
     public List<String> search(String query, int limit) {
         searchRequests.add(System.currentTimeMillis());
-        requests.add(System.currentTimeMillis());
-        int timesPrevRequested = 0;
-
-        int prevRequestCount = requestMap.getOrDefault(query, 0);
-        requestMap.put(query, ++prevRequestCount);
-
-        List<String> results = new ArrayList<String>();
-        results = wiki.search(query, limit);
-        return (results);
-    }
-
-    /**
-     * Given a page title, return the text of the page
-     * @param pageTitle Page title of data to return
-     * @return String of the text of the page
-     */
-    public String getPage(String pageTitle) {
-        searchRequests.add(System.currentTimeMillis());
-        requests.add(System.currentTimeMillis());
-
-        int prevRequestCount = requestMap.getOrDefault(pageTitle, 0);
-        requestMap.put(pageTitle, ++prevRequestCount);
-
-        String result;
-
-        page currentPage;
-
-        try {
-            currentPage = (page)pageData.get(pageTitle);
-            result = currentPage.getText();
-        }
-        catch (Exception e){
-            currentPage = new page(pageTitle, wiki.getPageText(pageTitle));
-            result = currentPage.getText();
-            pageData.put(currentPage);
-        }
-        return result;
+        return (wiki.search(query, limit));
     }
 
     /**
@@ -104,7 +66,6 @@ public class WikiMediator {
         WikiNode startNode = new WikiNode(pageTitle1, null);
 
         ArrayList<WikiNode> queue = new ArrayList<>();
-        ArrayList<WikiNode> searchedNodes = new ArrayList<>();
 
         ArrayList<String> queueStrings = new ArrayList<>();
         ArrayList<String> nodeLinks;
@@ -112,8 +73,9 @@ public class WikiMediator {
 
         ArrayList<String> path = new ArrayList<>();
 
-        queue.add(startNode);
+        //queue.add(startNode);
         queueStrings.add(pageTitle1);
+        queue.add(startNode);
 
         WikiNode node;
         String nodeString;
@@ -129,7 +91,6 @@ public class WikiMediator {
 
                 // add it to searched, generate its path and end the search
                 searchedStrings.add(nodeString);
-                searchedNodes.add(node);
                 path = getPath(node);
                 break;
 
@@ -138,12 +99,12 @@ public class WikiMediator {
 
                 // add it to searched
                 searchedStrings.add(nodeString);
-                searchedNodes.add(node);
 
                 // and add its children (in lexicographical order) to the queue
                 queueStrings.addAll(nodeLinks);
-                for (String s : nodeLinks){
-                    queue.add(new WikiNode(s, node));
+
+                for (String nodeLink : nodeLinks) {
+                    queue.add(new WikiNode(nodeLink, node));
                 }
             }
 
@@ -176,20 +137,10 @@ public class WikiMediator {
         return path;
     }
 
-
-    /**
-     * @param limit
-     * @return
-     */
-    public List<String> zeitgeist(int limit) {
-        List<String> returnList = requestMap.entrySet().stream()
-                                            .sorted(Comparator.comparingInt(Map.Entry::getValue))
-                                            .map(Map.Entry::getKey)
-                                            .collect(Collectors.toList());
-        Collections.reverse(returnList);
-
-        return returnList;
+    public Object getPage(String pageTitle) {
+        return null;
     }
 
-
+    public Object zeitgeist(int limit) {
+    return null;}
 }
