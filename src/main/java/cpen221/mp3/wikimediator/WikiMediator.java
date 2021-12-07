@@ -3,21 +3,11 @@ package cpen221.mp3.wikimediator;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
-import kotlin.jvm.internal.TypeReference;
 import org.fastily.jwiki.core.Wiki;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Iterator;
-
-import com.google.gson.Gson;
-
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
