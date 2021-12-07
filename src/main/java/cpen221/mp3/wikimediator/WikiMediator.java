@@ -256,8 +256,8 @@ public class WikiMediator {
     private int countInWindow (List<Long> list, Long start, Long end) {
         int count = 0;
 
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) >= start && list.get(i) < end) {
+        for (Long element : list) {
+            if (element >= start && element < end) {
                 count++;
             }
         }
