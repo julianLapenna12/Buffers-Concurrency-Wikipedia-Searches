@@ -13,9 +13,9 @@ import java.util.concurrent.*;
 
 public class WikiMediatorServer {
 
-    private ServerSocket serverSocket;
-    private WikiMediator mediator;
-    private int maxThreads;
+    private final ServerSocket serverSocket;
+    private final WikiMediator mediator;
+    private final int maxThreads;
     private int numThread = 0;
     private boolean shutdown = false;
 
@@ -39,6 +39,9 @@ public class WikiMediatorServer {
 
     }
 
+    /**
+     *
+     */
     public void serve () {
         shutdown = false;
         while(!serverSocket.isClosed()) {
@@ -71,6 +74,11 @@ public class WikiMediatorServer {
         }
     }
 
+    /**
+     *
+     * @param socket
+     * @throws IOException
+     */
     private void handle(Socket socket) throws IOException{
         System.err.println("client connected");
         //Multithreaded Function to handle requests
@@ -95,11 +103,18 @@ public class WikiMediatorServer {
         }
     }
 
+    /**
+     *
+     * @param request
+     * @param gson
+     * @return
+     */
     private String handleRequest(WikiRequest request, Gson gson){
         WikiResponse response = new WikiResponse();
         response.id = request.id;
         //Creates new Thread to allow for timeout
-        //Code In part take from: https://stackoverflow.com/questions/17233038/how-to-implement-synchronous-method-timeouts-in-java
+        //Code In part take from:
+        //https://stackoverflow.com/questions/17233038/how-to-implement-synchronous-method-timeouts-in-java
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> future = executor.submit(new Callable() {
             @Override
@@ -153,6 +168,9 @@ public class WikiMediatorServer {
     }
 
     //Handles shutdown by writing state of Wikimediator to disk
+    /**
+     *
+     */
     private void shutdown() {
         mediator.writeToFile();
         try {

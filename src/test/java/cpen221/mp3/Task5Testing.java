@@ -119,7 +119,7 @@ public class Task5Testing {
     }
 
     @Test
-    public void testPhilObama() { // untested
+    public void testPhilObama() {
         List<String> path = null;
         WikiMediator wikiM = new WikiMediator(100, 60 * 60);
 

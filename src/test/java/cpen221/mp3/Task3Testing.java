@@ -12,7 +12,6 @@ import java.util.*;
 
 public class Task3Testing {
 
-
     @Test
     public void testZeitgeistLimit() {
         WikiMediator testingWikiMediator = new WikiMediator(5, 3);
