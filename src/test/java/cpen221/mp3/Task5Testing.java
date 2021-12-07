@@ -151,4 +151,21 @@ public class Task5Testing {
         Assert.assertEquals(1, path.size());
         System.out.println(path);
     }
+
+    @Test
+    public void testUnitedTravis() {
+        List<String> path = null;
+        WikiMediator wikiM = new WikiMediator(100, 60 * 60);
+
+        try {
+            path = wikiM.shortestPath("United States",
+                    "Travis Scott", 60 * 60);
+        } catch (TimeoutException e) {
+            // hopefully this doesn't time out
+            Assert.fail(e.getMessage());
+        }
+
+        Assert.assertEquals(3, path.size());
+        System.out.println(path);
+    }
 }

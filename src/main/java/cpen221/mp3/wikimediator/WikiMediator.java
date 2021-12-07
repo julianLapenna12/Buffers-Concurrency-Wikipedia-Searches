@@ -10,6 +10,12 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -49,10 +55,10 @@ public class WikiMediator {
     private List<Long> searchRequests = new ArrayList<Long>();
 
     private List<Long> requests = new ArrayList<Long>();
+    private Map<String, ArrayList<Long>> requestMap = new HashMap<String, ArrayList<Long>>();
 
-    private Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
+    private final Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
-    private Map<String, ArrayList<Long>> requestMap = Collections.synchronizedMap(new HashMap<String, ArrayList<Long>>());
     private String requestMapFileLocation = "local/dataMap.json";
     private String requestListFileLocation = "local/dataList.json";
 
@@ -107,7 +113,7 @@ public class WikiMediator {
             }
         }
 
-        List<String> results = new ArrayList<String>();
+        List<String> results;
         results = wiki.search(query, limit);
         return (results);
     }
@@ -274,26 +280,36 @@ public class WikiMediator {
 
     /**
      *
-     * @param pageTitle1
-     * @param pageTitle2
-     * @param timeout
-     * @return
-     * @throws TimeoutException
+     * @param pageTitle1 The title of the source Wikipedia page
+     * @param pageTitle2 The title of the destination Wikipedia page
+     * @param timeout the duration in seconds that the search may last
+     * @return An ordered list of Wikipedia pages that can be traversed by
+     *         internal Wikipedia links to arrive at the destination from
+     *         the source (inclusive). The list provides the shortest possible path
+     *         and in the case of a tie, the lowest lexicographical path
+     * @throws TimeoutException If the operation is not successful in the
+     *                          allotted time an exception will be thrown
      */
     public List<String> shortestPath(String pageTitle1, String pageTitle2, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + (timeout * 1000L);
 
+        // for the case of the start and end being the same pages
+        // and when there is a page that nothing links to
         if (pageTitle1.equals(pageTitle2)) return new ArrayList<>(Collections.singleton(pageTitle1));
+        if (wiki.whatLinksHere(pageTitle2).size() == 0) return new ArrayList<>();
 
-        // create initial node with no children
+        // create initial node with no parent
         WikiNode startNode = new WikiNode(pageTitle1, null);
 
+        // Arraylist to store the nodes which create the path upon finding the destination
         ArrayList<WikiNode> queue = new ArrayList<>();
 
+        // Arraylists to store the queue, searched and temp storage of the page links
         ArrayList<String> queueStrings = new ArrayList<>();
         ArrayList<String> nodeLinks;
         ArrayList<String> searchedStrings = new ArrayList<>();
 
+        // Arraylist storing the path that will be returned
         ArrayList<String> path = new ArrayList<>();
 
         queueStrings.add(pageTitle1);
@@ -311,22 +327,22 @@ public class WikiMediator {
             // if the node's links contain the node we want
             if (nodeLinks.contains(pageTitle2)) {
 
-                // add it to searched, generate its path and end the search
-                searchedStrings.add(nodeString);
+
+                // generate its path and end the search
                 path = getPath(node);
                 break;
 
-                // otherwise if it also hasn't already been searched
+                // otherwise, if it also hasn't already been searched
             } else if (!searchedStrings.contains(nodeString)) {
 
                 // add it to searched
                 searchedStrings.add(nodeString);
 
-                // and add its children (in lexicographical order) to the queue
+                // add its children (in lexicographical order) to the queue
                 queueStrings.addAll(nodeLinks);
 
-                for (String nodeLink : nodeLinks) {
-                    queue.add(new WikiNode(nodeLink, node));
+                for (String s : nodeLinks) { // and add its children as nodes to their queue
+                    queue.add(new WikiNode(s, node));
                 }
             }
 
@@ -335,18 +351,20 @@ public class WikiMediator {
                 throw new TimeoutException("shortest path search timed-out.");
             }
         }
-        // return its path which if no path was found
-        // is an empty array list, and otherwise is the shortest
-        // lexicographical path
+        // return its path which if no path was found is an empty array list,
+        // and otherwise is the shortest lexicographical path
         if (path.size() == 0) return path;
         path.add(pageTitle2);
         return path;
     }
 
     /**
-     *
-     * @param w
-     * @return
+     * Given a child WikiNode, traverse up the tree of its parents to
+     * find a path from the upper-most parent to the given child WikiNode
+     * @param w the child WikiNode
+     * @return a list of IDs including the parent and child nodes that
+     *         represent a path that can be taken from the parent Wikipedia
+     *         page to arrive at the child Wikipedia page
      */
     private ArrayList<String> getPath(WikiNode w) {
         ArrayList<String> path = new ArrayList<>();
