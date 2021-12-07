@@ -32,7 +32,6 @@ public class WikiMediatorServer {
             serverSocket = new ServerSocket(port);
             maxThreads = n;
             mediator = wikiMediator;
-            //TODO read the state of saved data from disk
         }
         catch (IOException e){
             throw new RuntimeException();
@@ -155,7 +154,7 @@ public class WikiMediatorServer {
 
     //Handles shutdown by writing state of Wikimediator to disk
     private void shutdown() {
-        //TODO Write the state of WikiMediator to disk
+        mediator.writeToFile();
         try {
             serverSocket.close();
         } catch (IOException e) {
