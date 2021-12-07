@@ -6,16 +6,31 @@ public class WikiResponse {
     public String id;
     public String status;
     public Object response;
+
+    /**
+     *
+     */
     public WikiResponse(){
 
     }
 
+    /**
+     *
+     * @param id
+     * @param response
+     * @param status
+     */
     public WikiResponse(String id, Object response, String status){
         this.id = id;
         this.status = status;
         this.response = response;
     }
 
+    /**
+     *
+     * @param id
+     * @param response
+     */
     public WikiResponse(String id, Object response){
         this.id = id;
         this.response = response;
