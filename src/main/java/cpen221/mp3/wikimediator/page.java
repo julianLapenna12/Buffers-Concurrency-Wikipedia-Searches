@@ -12,6 +12,7 @@ public class page implements Bufferable {
     !id.equals(null)
     !id.equals("")
     !text.equals(null)
+    !text.equals("")
     */
 
     /*
@@ -23,6 +24,17 @@ public class page implements Bufferable {
 
     public String id;
     public String text;
+
+    /**
+     * Checks the rep invariant for the page class
+     * @return Returns a boolean describing whether the rep invariant has been met or not
+     */
+    private boolean checkRep() {
+        if (id.equals(null) || id.equals("") || text.equals(null) || text.equals("")) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Contructor for the class
