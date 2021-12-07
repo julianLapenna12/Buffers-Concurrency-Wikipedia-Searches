@@ -48,6 +48,32 @@ public class WikiMediator {
     private final Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
     /**
+     * Method which checks that the rep invariants hold for the class
+     * @return A boolean describing whether the rep invariant has held or not
+     */
+    public boolean checkRep(){
+
+        int totalMapEntries = 0;
+        for (List<Long> list : requestMap.values()) {
+            totalMapEntries+=list.size();
+            if (list.size()==0) {
+                return false;
+            }
+            for (Long element : list) {
+                if (!requests.contains(element)) {
+                    return false;
+                }
+            }
+        }
+
+        if (requests.size() < totalMapEntries || pageData.getSize() > totalMapEntries) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Constructor that creates new pageData database, and loads in all previous data (if any exists) from local data.json file used to store all data
      * @param capacity Capacity of the database.  Must be greater than or equal to 1
      * @param stalenessInterval staleness interval for pages in the database in seconds.  Must be greater than or equal to 1
@@ -256,8 +282,8 @@ public class WikiMediator {
     private int countInWindow (List<Long> list, Long start, Long end) {
         int count = 0;
 
-        for (Long aLong : list) {
-            if (aLong >= start && aLong < end) {
+        for (Long element : list) {
+            if (element >= start && element < end) {
                 count++;
             }
         }
