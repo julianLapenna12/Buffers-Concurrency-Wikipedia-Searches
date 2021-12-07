@@ -68,6 +68,30 @@ public class Task4Test {
         Assertions.assertEquals("success", mes.status);
     }
 
+    @Test
+    public void zeitReq(){
+        WikiResponse mes = makeRequest(client, buildZeitgeist("2", 10));
+        Assertions.assertEquals("success", mes.status);
+    }
+
+    @Test
+    public void shortestReq(){
+        WikiResponse mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
+        Assertions.assertEquals("success", mes.status);
+    }
+
+    @Test
+    public void trendingReq(){
+        WikiResponse mes= makeRequest(client, buildTrending("1", 10, 10));
+        Assertions.assertEquals("success", mes.status);
+    }
+
+    @Test
+    public void peakLoadReq(){
+        WikiResponse mes= makeRequest(client, buildWindowedPeakLoad("1", 10));
+        Assertions.assertEquals("success", mes.status);
+    }
+
     public WikiRequest buildReq(String id, String type){
         WikiRequest req = new WikiRequest();
         req.id = id;
@@ -96,6 +120,34 @@ public class Task4Test {
         req.limit = limit;
         return req;
     }
+
+    public WikiRequest buildZeitgeist(String id, int limit){
+        WikiRequest req = buildReq(id, "zeitgeist");
+        req.limit = limit;
+        return req;
+    }
+
+    public WikiRequest buildTrending(String id, int timeLimit, int maxItems){
+        WikiRequest req = buildReq(id, "zeitgeist");
+        req.timeLimitInSeconds = timeLimit;
+        req.maxItems = maxItems;
+        return req;
+    }
+
+    public WikiRequest buildWindowedPeakLoad(String id, int timeWindow){
+        WikiRequest req = buildReq(id, "windowedPeakLoad");
+        req.timeWindowInSeconds = timeWindow;
+        return req;
+    }
+
+    public WikiRequest buildShortestPath(String id, String page1, String page2, int timeout){
+        WikiRequest req = buildReq(id, "shortestPath");
+        req.pageTitle1 = page1;
+        req.pageTitle2 = page2;
+        req.timeout = timeout;
+        return req;
+    }
+
 
     public static TestClient buildClient(String ip, int port){
         TestClient client = new TestClient();
