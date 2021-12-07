@@ -135,11 +135,4 @@ public class WikiMediator {
         path.add(w.getId());
         return path;
     }
-
-    public Object getPage(String pageTitle) {
-        return null;
-    }
-
-    public Object zeitgeist(int limit) {
-    return null;}
 }
