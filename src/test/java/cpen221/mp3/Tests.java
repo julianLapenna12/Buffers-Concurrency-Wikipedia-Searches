@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import cpen221.mp3.fsftbuffer.FSFTBuffer;
 import cpen221.mp3.fsftbuffer.TestObject;
 import cpen221.mp3.wikimediator.WikiMediator;
-import org.junit.Assert;
 import org.junit.Test;
 import java.io.FileWriter;
 import java.io.Writer;
@@ -29,13 +28,13 @@ public class Tests {
     @Test
     public void testConstruction() {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>();
-        Assert.assertEquals(t.getSize(), 0);
+        Assertions.assertEquals(t.getSize(), 0);
     }
 
     @Test
     public void testConstruction2() {
         FSFTBuffer<TestObject> t = new FSFTBuffer<>(10, 10);
-        Assert.assertEquals(t.getSize(), 0);
+        Assertions.assertEquals(t.getSize(), 0);
     }
 
     @Test
@@ -44,7 +43,7 @@ public class Tests {
         TestObject ro0 = new TestObject("0");
         t.put(ro0);
 
-        Assert.assertTrue(t.touch("0"));
+        Assertions.assertTrue(t.touch("0"));
     }
 
     @Test
@@ -56,10 +55,10 @@ public class Tests {
 
         t.put(ro0);
 
-        Assert.assertTrue(t.touch("0"));
-        Assert.assertTrue(t.update(ro0));
-        Assert.assertFalse(t.touch("1"));
-        Assert.assertFalse(t.update(ro2));
+        Assertions.assertTrue(t.touch("0"));
+        Assertions.assertTrue(t.update(ro0));
+        Assertions.assertFalse(t.touch("1"));
+        Assertions.assertFalse(t.update(ro2));
     }
 
 
@@ -78,16 +77,16 @@ public class Tests {
         testSet.add(t2);
 
         for (TestObject testObj : testSet) {
-            Assert.assertTrue(t.put(testObj));
+            Assertions.assertTrue(t.put(testObj));
         }
 
         try {
             for (TestObject testObj : testSet) {
-                Assert.assertEquals(t.get(testObj.id()), testObj);
+                Assertions.assertEquals(t.get(testObj.id()), testObj);
             }
         } catch (NoSuchObjectException e) {
             // this should not happen
-            Assert.fail();
+            Assertions.fail();
         }
     }
 
@@ -105,14 +104,14 @@ public class Tests {
 
         try {
             for (int i = 3; i < 7; i++) {
-                Assert.assertEquals(t.get(Integer.toString(i)).id(), Integer.toString(i));
+                Assertions.assertEquals(t.get(Integer.toString(i)).id(), Integer.toString(i));
             }
         } catch (NoSuchObjectException e) {
             // this should never reach here
-            Assert.fail();
+            Assertions.fail();
         }
 
-        Assert.assertEquals(4, t.getSize());
+        Assertions.assertEquals(4, t.getSize());
     }
 
     @Test
@@ -128,7 +127,7 @@ public class Tests {
 
         Thread.sleep(6000);
 
-        Assert.assertEquals(0, t.getSize());
+        Assertions.assertEquals(0, t.getSize());
     }
 
     @Test
@@ -150,19 +149,19 @@ public class Tests {
         }
 
         for (FSFTBuffer<TestObject> t0 : t) {
-            Assert.assertEquals(0, t0.getSize());
+            Assertions.assertEquals(0, t0.getSize());
         }
 
         for (FSFTBuffer<TestObject> t0 : t) {
             for (TestObject T : testObj) {
                 try {
                     t0.get(T.id());
-                    Assert.fail("expected exception was not thrown");
+                    Assertions.fail("expected exception was not thrown");
                 } catch (NoSuchObjectException e) {
                     // if execution reaches here,
                     // it indicates this exception was thrown
                     // which is what we want
-                    Assert.assertTrue(true);
+                    Assertions.assertTrue(true);
                 }
             }
         }
@@ -180,53 +179,53 @@ public class Tests {
 
         try {
             // Add a, b, c
-            Assert.assertTrue(t.put(r[0]));
-            Assert.assertTrue(t.put(r[1]));
-            Assert.assertTrue(t.put(r[2]));
+            Assertions.assertTrue(t.put(r[0]));
+            Assertions.assertTrue(t.put(r[1]));
+            Assertions.assertTrue(t.put(r[2]));
 
-            Assert.assertEquals(t.getSize(), 3);
+            Assertions.assertEquals(t.getSize(), 3);
             for (int i = 0; i < 2; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(3000);
 
-            Assert.assertEquals(t.getSize(), 3);
+            Assertions.assertEquals(t.getSize(), 3);
             for (int i = 0; i < 2; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             // Add b, c, d
-            Assert.assertTrue(t.put(r[1]));
-            Assert.assertTrue(t.put(r[2]));
-            Assert.assertTrue(t.put(r[3]));
+            Assertions.assertTrue(t.put(r[1]));
+            Assertions.assertTrue(t.put(r[2]));
+            Assertions.assertTrue(t.put(r[3]));
 
-            Assert.assertEquals(t.getSize(), 4);
+            Assertions.assertEquals(t.getSize(), 4);
             for (int i = 0; i < 4; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(1200); // a has expired
 
-            Assert.assertFalse(t.touch("a"));
-            Assert.assertEquals(t.getSize(), 3);
+            Assertions.assertFalse(t.touch("a"));
+            Assertions.assertEquals(t.getSize(), 3);
             for (int i = 1; i < 4; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             // touch c, update d
-            Assert.assertTrue(t.touch("c"));
-            Assert.assertTrue(t.update(r[3]));
+            Assertions.assertTrue(t.touch("c"));
+            Assertions.assertTrue(t.update(r[3]));
 
             Thread.sleep(1500);
 
             // Add e, f (b should be removed as oldest)
-            Assert.assertTrue(t.put(r[4]));
-            Assert.assertTrue(t.put(r[5]));
+            Assertions.assertTrue(t.put(r[4]));
+            Assertions.assertTrue(t.put(r[5]));
 
-            Assert.assertEquals(t.getSize(), 4);
+            Assertions.assertEquals(t.getSize(), 4);
             for (int i = 2; i < 6; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(3000); // c, d have expired
@@ -235,29 +234,29 @@ public class Tests {
             Assertions.assertTrue(t.put(r[5]));
             Assertions.assertEquals(t.getSize(), 2);
             for (int i = 4; i < 6; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(1500); // e expired
 
-            Assert.assertEquals(t.getSize(), 1);
-            Assert.assertEquals(t.get("f"), r[5]);
+            Assertions.assertEquals(t.getSize(), 1);
+            Assertions.assertEquals(t.get("f"), r[5]);
 
             Thread.sleep(3000); // f expired
 
-            Assert.assertEquals(t.getSize(), 0);
+            Assertions.assertEquals(t.getSize(), 0);
 
             try {
                 t.get("I love cpen221 :)");
                 // this should throw an exception
-                Assert.fail();
+                Assertions.fail();
             } catch (NoSuchObjectException e) {
                 // this should be caught
             }
 
         } catch (NoSuchObjectException e) {
             // should never reach here
-            Assert.fail();
+            Assertions.fail();
         }
     }
 
@@ -271,59 +270,59 @@ public class Tests {
                 new TestObject("5")};
 
         // Add 0, 1
-        Assert.assertTrue(t.put(r[0]));
-        Assert.assertTrue(t.put(r[1]));
+        Assertions.assertTrue(t.put(r[0]));
+        Assertions.assertTrue(t.put(r[1]));
 
         Thread.sleep(2000);
 
-        Assert.assertTrue(t.touch("0"));
-        Assert.assertTrue(t.update(r[0]));
-        Assert.assertFalse(t.update(r[4]));
+        Assertions.assertTrue(t.touch("0"));
+        Assertions.assertTrue(t.update(r[0]));
+        Assertions.assertFalse(t.update(r[4]));
 
         Thread.sleep(2100); // 1 expires
 
-        Assert.assertFalse(t.update(r[1]));
-        Assert.assertFalse(t.touch("1"));
-        Assert.assertTrue(t.update(r[0]));
+        Assertions.assertFalse(t.update(r[1]));
+        Assertions.assertFalse(t.touch("1"));
+        Assertions.assertTrue(t.update(r[0]));
 
         Thread.sleep(10);
 
-        Assert.assertTrue(t.put(r[1])); // Add 1
+        Assertions.assertTrue(t.put(r[1])); // Add 1
 
         Thread.sleep(50);
 
-        Assert.assertTrue(t.put(r[2])); // Add 2
+        Assertions.assertTrue(t.put(r[2])); // Add 2
 
         Thread.sleep(50);
 
-        Assert.assertEquals(t.getSize(), 3);
-        Assert.assertTrue(t.put(r[4])); // Add 4
-        Assert.assertEquals(t.getSize(), 4);
+        Assertions.assertEquals(t.getSize(), 3);
+        Assertions.assertTrue(t.put(r[4])); // Add 4
+        Assertions.assertEquals(t.getSize(), 4);
 
         Thread.sleep(50);
 
-        Assert.assertTrue(t.put(r[5])); // Add 5, 0 removed as max capacity reached
-        Assert.assertEquals(t.getSize(), 4);
+        Assertions.assertTrue(t.put(r[5])); // Add 5, 0 removed as max capacity reached
+        Assertions.assertEquals(t.getSize(), 4);
 
         try {
             for (int i = 1; i < 6; i++) {
-                if (i !=3) Assert.assertEquals(t.get(r[i].id()), r[i]);
+                if (i !=3) Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(50);
 
-            Assert.assertTrue(t.put(r[3])); // Add 3, 1 removed as max capacity reached
-            Assert.assertEquals(t.getSize(), 4);
+            Assertions.assertTrue(t.put(r[3])); // Add 3, 1 removed as max capacity reached
+            Assertions.assertEquals(t.getSize(), 4);
             for (int i = 2; i < 6; i++) {
-                Assert.assertEquals(t.get(r[i].id()), r[i]);
+                Assertions.assertEquals(t.get(r[i].id()), r[i]);
             }
 
             Thread.sleep(4000);
 
-            Assert.assertEquals(t.getSize(), 0);
+            Assertions.assertEquals(t.getSize(), 0);
         } catch (NoSuchObjectException e) {
             // this should not execute
-            Assert.fail();
+            Assertions.fail();
         }
     }
 
@@ -333,22 +332,22 @@ public class Tests {
 
         TestObject r = new TestObject("0");
 
-        Assert.assertFalse(t.put(null));
-        Assert.assertEquals(t.getSize(), 0);
+        Assertions.assertFalse(t.put(null));
+        Assertions.assertEquals(t.getSize(), 0);
 
-        Assert.assertTrue(t.put(r));
-        Assert.assertFalse(t.put(null));
-        Assert.assertEquals(t.getSize(), 1);
+        Assertions.assertTrue(t.put(r));
+        Assertions.assertFalse(t.put(null));
+        Assertions.assertEquals(t.getSize(), 1);
 
         try {
             t.get(null);
-            Assert.fail();
+            Assertions.fail();
         } catch (NoSuchObjectException e) {
             // this should execute
         }
 
-        Assert.assertFalse(t.touch(null));
-        Assert.assertFalse(t.update(null));
+        Assertions.assertFalse(t.touch(null));
+        Assertions.assertFalse(t.update(null));
     }
 
     @Test
@@ -359,11 +358,11 @@ public class Tests {
         TestObject b = new TestObject("i love cpen221");
         TestObject c = new TestObject("i love cpen221");
 
-        Assert.assertTrue(t.put(a));
-        Assert.assertTrue(t.put(b));
-        Assert.assertTrue(t.put(c));
+        Assertions.assertTrue(t.put(a));
+        Assertions.assertTrue(t.put(b));
+        Assertions.assertTrue(t.put(c));
 
-        Assert.assertEquals(1, t.getSize());
+        Assertions.assertEquals(1, t.getSize());
     }
 
     @Test
@@ -384,7 +383,7 @@ public class Tests {
             testingWikiMediator.getPage("Cat");
         }
 
-        Assert.assertEquals(Arrays.asList("grapple", "Car", "Dog"), testingWikiMediator.zeitgeist(3));
+        Assertions.assertEquals(Arrays.asList("grapple", "Car", "Dog"), testingWikiMediator.zeitgeist(3));
     }
 
     @Test
@@ -405,7 +404,7 @@ public class Tests {
             testingWikiMediator.getPage("Cat");
         }
 
-        Assert.assertEquals(Arrays.asList("grapple", "Car", "Dog", "Hamster", "Cat"), testingWikiMediator.zeitgeist(6));
+        Assertions.assertEquals(Arrays.asList("grapple", "Car", "Dog", "Hamster", "Cat"), testingWikiMediator.zeitgeist(6));
     }
 
     @Test
@@ -421,7 +420,7 @@ public class Tests {
         testingWikiMediator.getPage("G");
         testingWikiMediator.getPage("H");
 
-        Assert.assertEquals(Arrays.asList("H", "G", "F", "E", "D", "C", "B", "A"), testingWikiMediator.zeitgeist(10));
+        Assertions.assertEquals(Arrays.asList("H", "G", "F", "E", "D", "C", "B", "A"), testingWikiMediator.zeitgeist(10));
     }
 
     @Test
@@ -430,7 +429,7 @@ public class Tests {
 
         testingWikiMediator.search("key", 3);
 
-        Assert.assertEquals(Arrays.asList("key"), testingWikiMediator.zeitgeist(3));
+        Assertions.assertEquals(Collections.singletonList("key"), testingWikiMediator.zeitgeist(3));
     }
 
     @Test
@@ -442,7 +441,7 @@ public class Tests {
         mediator.zeitgeist(2);
         mediator.trending(10, 5);
         try {
-            Thread.sleep(1 * 5500);
+            Thread.sleep(5500);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -451,7 +450,7 @@ public class Tests {
         mediator.search("Lion", 1);
         //mediator.windowedPeakLoad();
 
-        Assert.assertEquals(5, mediator.windowedPeakLoad(5));
+        Assertions.assertEquals(5, mediator.windowedPeakLoad(5));
 
     }
 
@@ -478,7 +477,7 @@ public class Tests {
         mediator.getPage("Ant");
         mediator.getPage("Snake");
 
-        Assert.assertEquals(9, mediator.windowedPeakLoad(6));
+        Assertions.assertEquals(9, mediator.windowedPeakLoad(6));
 
     }
 
@@ -525,7 +524,7 @@ public class Tests {
         testingWikiMediator.getPage("Cat");
         testingWikiMediator.getPage("Cat");
 
-        Assert.assertEquals(9, testingWikiMediator.windowedPeakLoad(3));
+        Assertions.assertEquals(9, testingWikiMediator.windowedPeakLoad(3));
     }
 
     @Test
@@ -540,7 +539,7 @@ public class Tests {
         testingWikiMediator.getPage("Dog");
         testingWikiMediator.search("excellent", 1);
 
-        Assert.assertEquals(8, testingWikiMediator.windowedPeakLoad(3));
+        Assertions.assertEquals(8, testingWikiMediator.windowedPeakLoad(3));
     }
 
     @Test
@@ -559,8 +558,7 @@ public class Tests {
         try {
             Thread.sleep(4*1000);
         }
-        catch(Exception e) {
-
+        catch(Exception ignored) {
         }
 
         testingWikiMediator.getPage("Hamster");
@@ -570,7 +568,7 @@ public class Tests {
         testingWikiMediator.getPage("Rat");
         testingWikiMediator.getPage("Rat");
 
-        Assert.assertEquals(Arrays.asList("Hamster", "Rat"), testingWikiMediator.trending(3, 2));
+        Assertions.assertEquals(Arrays.asList("Hamster", "Rat"), testingWikiMediator.trending(3, 2));
     }
 
     @Test
@@ -594,22 +592,75 @@ public class Tests {
         testingWikiMediator.getPage("Dog");
         testingWikiMediator.getPage("Dog");
 
-        Assert.assertEquals(Arrays.asList("Dog", "Cat", "f"), testingWikiMediator.trending(3, 3));
+        Assertions.assertEquals(Arrays.asList("Dog", "Cat", "f"), testingWikiMediator.trending(3, 3));
     }
 
+    @Test
+    public void testDefaultTimeWindow() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.search("f", 10);
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.search("f", 10);
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        try {
+            Thread.sleep(31*1000);
+        }
+        catch(Exception ignored) {
+
+        }
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        Assertions.assertEquals(12, testingWikiMediator.windowedPeakLoad());
+    }
+
+    @Test
+    public void testWritingToFiles() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        testingWikiMediator.writeToFile();
+
+        WikiMediator testingWikiMediator2 = new WikiMediator(10, 10);
+
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Dog");
+        testingWikiMediator2.getPage("Dog");
+
+        Assertions.assertEquals(Arrays.asList("Dog", "Cat"), testingWikiMediator2.zeitgeist(2));
+    }
 
     @Test
     public void testReadingFromJson() {
 
-        List<Long> testList = new ArrayList<Long>();
+        List<Long> testList = new ArrayList<>();
         testList.add(System.currentTimeMillis());
 
-        Map<String, List<Long>> testMap = new HashMap<String, List<Long>>();
+        Map<String, List<Long>> testMap = new HashMap<>();
         testMap.put("Dog", testList);
 
         try {
-            Gson gson = new Gson();
-
             Writer writerMap = new FileWriter("local/dataMap.json");
             new Gson().toJson(testMap, writerMap);
             writerMap.close();
@@ -619,13 +670,11 @@ public class Tests {
         }
 
         try  {
-            Gson gson = new Gson();
             Writer writerList = new FileWriter("local/dataList.json");
             new Gson().toJson(testList, writerList);
             writerList.close();
         }
-        catch (Exception e) {
-
+        catch (Exception ignored) {
         }
 
         WikiMediator testingMediator = new WikiMediator(10, 90);
@@ -640,10 +689,10 @@ public class Tests {
 
         try {
             path = wikiM.shortestPath("Water", "1,3,5-Trithiane", 60 * 5);
-            Assert.assertEquals(2, path.size());
+            Assertions.assertEquals(2, path.size());
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -654,10 +703,10 @@ public class Tests {
 
         try {
             path = wikiM.shortestPath("AA Tauri", "10 Tauri", 60 * 5);
-            Assert.assertEquals(2, path.size());
+            Assertions.assertEquals(2, path.size());
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -668,10 +717,10 @@ public class Tests {
 
         try {
             path = wikiM.shortestPath("The Autumn Republic", "The Wheel of Time", 60 * 5);
-            Assert.assertEquals(3, path.size());
+            Assertions.assertEquals(3, path.size());
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
     }
 
@@ -690,11 +739,11 @@ public class Tests {
                     "Dallas", 60 * 5);
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
-        Assert.assertEquals(3, path.size());
-        Assert.assertEquals(expected, path);
+        Assertions.assertEquals(3, path.size());
+        Assertions.assertEquals(expected, path);
     }
 
     @Test
@@ -711,11 +760,11 @@ public class Tests {
                     "Continuing education", 60 * 20);
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
-        Assert.assertEquals(3, path.size());
-        Assert.assertEquals(expected, path);
+        Assertions.assertEquals(3, path.size());
+        Assertions.assertEquals(expected, path);
     }
 
     @Test
@@ -728,10 +777,10 @@ public class Tests {
                     "Barack Obama", 60 * 60);
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
-        Assert.assertEquals(3, path.size());
+        Assertions.assertEquals(3, path.size());
         System.out.println(path);
     }
 
@@ -745,10 +794,10 @@ public class Tests {
                     "Philosophy", 60 * 60);
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
-        Assert.assertEquals(1, path.size());
+        Assertions.assertEquals(1, path.size());
         System.out.println(path);
     }
 
@@ -762,10 +811,10 @@ public class Tests {
                     "Travis Scott", 60 * 60);
         } catch (TimeoutException e) {
             // hopefully this doesn't time out
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
-        Assert.assertEquals(3, path.size());
+        Assertions.assertEquals(3, path.size());
         System.out.println(path);
     }
 
@@ -777,12 +826,7 @@ public class Tests {
 
         WikiMediator mediator = new WikiMediator(10, 10);
         WikiMediatorServer server = new WikiMediatorServer(6666, 32, mediator);
-        Thread serverThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                server.serve();
-            }
-        });
+        Thread serverThread = new Thread(server::serve);
         serverThread.start();
         gson = new Gson();
         client = buildClient("127.0.0.1", 6666);
