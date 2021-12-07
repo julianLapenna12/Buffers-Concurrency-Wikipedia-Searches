@@ -15,9 +15,8 @@ public class WikiMediatorServer {
 
     private ServerSocket serverSocket;
     private WikiMediator mediator;
-    private int maxThreads;
-    private int numThread = 0;
     private boolean shutdown = false;
+    private Semaphore blocker;
 
     /**
      * Start a server at a given port number, with the ability to process
@@ -30,8 +29,8 @@ public class WikiMediatorServer {
     public WikiMediatorServer(int port, int n, WikiMediator wikiMediator) {
         try{
             serverSocket = new ServerSocket(port);
-            maxThreads = n;
             mediator = wikiMediator;
+            blocker = new Semaphore(n);
         }
         catch (IOException e){
             throw new RuntimeException();
@@ -46,11 +45,8 @@ public class WikiMediatorServer {
                 shutdown();
             }
             try{
-                while(numThread >= maxThreads){
-                    //Blocks until a thread is free if there are too many threads
-                }
+                blocker.acquire();
                 final Socket socket = serverSocket.accept();
-                numThread++;
                 Thread handler = new Thread(() -> {
                     try {
                         try {
@@ -63,9 +59,9 @@ public class WikiMediatorServer {
                     }
                 });
                 handler.start();
-                numThread--;
+                blocker.release();
             }
-            catch (IOException ioe){
+            catch (IOException | InterruptedException ioe){
                 throw new RuntimeException();
             }
         }

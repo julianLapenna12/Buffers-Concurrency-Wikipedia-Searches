@@ -102,6 +102,7 @@ public class Task4Test {
         WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
         WikiResponse mes3 = makeRequest(client3, buildSearchRequest("1", "Barack Obama", 5));
         WikiResponse mes4 = makeRequest(client4, buildSearchRequest("1", "Barack Obama", 5));
+        client2.stopConnection();
         WikiResponse mes5 = makeRequest(client5, buildSearchRequest("1", "Barack Obama", 5));
 
         Assertions.assertEquals("success", mes.status);
@@ -119,11 +120,12 @@ public class Task4Test {
         TestClient client4 = buildClient("127.0.0.1", 6666);
         TestClient client5 = buildClient("127.0.0.1", 6666);
         WikiResponse mes = makeRequest(client, buildSearchRequest("1", "Barack Obama", 5));
-        WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
-        WikiResponse mes3 = makeRequest(client3, buildSearchRequest("1", "Barack Obama", 5));
-        WikiResponse mes4 = makeRequest(client4, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Mark Van Raamsdonk", 5));
+        WikiResponse mes3 = makeRequest(client3, buildSearchRequest("1", "Cancer", 5));
+        WikiResponse mes4 = makeRequest(client4, buildSearchRequest("1", "Dollar", 5));
         client2.stopConnection();
-        WikiResponse mes5 = makeRequest(client5, buildSearchRequest("1", "Barack Obama", 5));
+        WikiResponse mes5 = makeRequest(client5, buildSearchRequest("1", "Computer", 5));
+        WikiResponse mes7 = makeRequest(client5, buildTrending("Trending", 10, 5));
         WikiResponse mes6 = makeRequest(client4, buildShutdown("1"));
 
         Assertions.assertEquals("success", mes.status);
@@ -133,6 +135,18 @@ public class Task4Test {
         Assertions.assertEquals("success", mes5.status);
     }
 
+    @Test
+    public void multiShortestReq(){
+        TestClient client2 = buildClient("127.0.0.1", 6666);
+        WikiResponse mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
+        WikiResponse mes2= makeRequest(client2, buildShortestPath("2", "Mark Van Raamsdonk", "Philosophy", 100));
+        WikiResponse mes3= makeRequest(client, buildShortestPath("3", "John Horton Conway", "American Civil War", 100));
+        WikiResponse mes4 = makeRequest(client, buildShutdown("Shutdown"));
+        Assertions.assertEquals("success", mes.status);
+        Assertions.assertEquals("success", mes2.status);
+        Assertions.assertEquals("success", mes3.status);
+        Assertions.assertEquals("success", mes4.status);
+    }
 
     public WikiRequest buildReq(String id, String type){
         WikiRequest req = new WikiRequest();
