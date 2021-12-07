@@ -9,7 +9,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +48,7 @@ public class WikiMediator {
     */
 
     private final FSFTBuffer pageData;
-    private List<Long> requests = Collections.synchronizedList(new ArrayList<Long>());
+    private List<Long> requests = Collections.synchronizedList(new ArrayList<>());
     private Map<String, ArrayList<Long>> requestMap = Collections.synchronizedMap(new HashMap<>());
     private final Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
@@ -297,8 +302,6 @@ public class WikiMediator {
     public void writeToFile() {
 
         try {
-            Gson gson = new Gson();
-
             Writer writerMap = new FileWriter("local/dataMap.json");
             new Gson().toJson(requestMap, writerMap);
             writerMap.close();
@@ -308,7 +311,6 @@ public class WikiMediator {
         }
 
         try  {
-            Gson gson = new Gson();
             Writer writerList = new FileWriter("local/dataList.json");
             new Gson().toJson(requests, writerList);
             writerList.close();
