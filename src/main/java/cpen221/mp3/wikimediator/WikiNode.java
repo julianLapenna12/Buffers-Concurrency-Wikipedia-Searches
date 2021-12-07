@@ -1,10 +1,27 @@
 package cpen221.mp3.wikimediator;
 
-import java.util.ArrayList;
+/**
+ * This class holds a node in the graph created when searching for paths between
+ * two Wikipedia pages. It acts as a one directional node where it is linked
+ * only to its parent node.
+ */
 
 public class WikiNode {
 
-    private ArrayList<WikiNode> children;
+    /*
+    Rep Invariant
+    this.id is the distinct identifier and is never null
+    this.id always has a corresponding Wikipedia page with a matching title
+        (unless it was a title passed by the user that doesn't exist)
+    this.parent is null if and only if it is the source of the search path to another Wikipedia page
+    */
+
+
+    /*
+    Abstraction function
+    This class represents a Wikipedia page that can be accessed by internal link from its parent page
+    */
+
     private final WikiNode parent;
     private final String id;
 

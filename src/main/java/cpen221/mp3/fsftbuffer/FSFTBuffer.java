@@ -6,7 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * This class is a special type of list to hold bufferable objects for the user with a finite capacity
+ * and timeout time. It keeps track of the timeout time and of the last use time of each object.
+ */
+
 public class FSFTBuffer<T extends Bufferable> {
+
+    /*
+    Rep Invariant
+    // TODO write this
+    */
+
+
+    /*
+    Abstraction function
+    // TODO write this
+    */
 
     private final Map<String, DetailedObject> masterMap = new HashMap<>();
     private final int timeout;
@@ -125,7 +141,6 @@ public class FSFTBuffer<T extends Bufferable> {
 
         if (!masterMap.containsKey(t.id())) return false;
 
-        // TODO: verify this is correct
         masterMap.get(t.id()).setStaleTime(time);
         masterMap.get(t.id()).setStoredObject(t);
         return true;

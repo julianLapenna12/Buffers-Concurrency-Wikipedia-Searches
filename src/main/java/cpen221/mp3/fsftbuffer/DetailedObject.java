@@ -2,7 +2,27 @@ package cpen221.mp3.fsftbuffer;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * This class holds parameterized bufferable objects, keeps track of each objects
+ * timeout time and time of last use. Each object is identified by its distinct
+ * identifier.
+ */
+
 public class DetailedObject<T extends Bufferable> implements Comparable {
+
+    /*
+    Rep Invariant
+    staleTime <= currentTimeInMillis() at all times
+    accessTime <= currentTimeInMillis() at all times
+    storedObject is not null and has a distinct identifier
+    */
+
+
+    /*
+    Abstraction function
+    This class represents a wrapper for the bufferable object passed by the user
+    that serves to track the object and its use time and expiry time.
+    */
 
     private T storedObject;
     private long staleTime, accessTime;
