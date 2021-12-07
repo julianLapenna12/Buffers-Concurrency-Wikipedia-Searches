@@ -244,6 +244,61 @@ public class Task3Testing {
         Assert.assertEquals(Arrays.asList("Dog", "Cat", "f"), testingWikiMediator.trending(3, 3));
     }
 
+    @Test
+    public void testDefaultTimeWindow() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.search("f", 10);
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.search("f", 10);
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        try {
+            Thread.sleep(31*1000);
+        }
+        catch(Exception e) {
+
+        }
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        Assert.assertEquals(12, testingWikiMediator.windowedPeakLoad());
+    }
+
+    @Test
+    public void testWritingToFiles() {
+        WikiMediator testingWikiMediator = new WikiMediator(10, 10);
+
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+        testingWikiMediator.getPage("Dog");
+
+        testingWikiMediator.writeToFile();
+
+        WikiMediator testingWikiMediator2 = new WikiMediator(10, 10);
+
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Cat");
+        testingWikiMediator2.getPage("Dog");
+        testingWikiMediator2.getPage("Dog");
+
+        Assert.assertEquals(Arrays.asList("Dog", "Cat"), testingWikiMediator2.zeitgeist(2));
+    }
 
     @Test
     public void testReadingFromJson() {

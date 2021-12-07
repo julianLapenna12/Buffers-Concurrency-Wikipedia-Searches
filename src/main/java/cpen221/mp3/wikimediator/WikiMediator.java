@@ -56,7 +56,7 @@ public class WikiMediator {
      * Method which checks that the rep invariants hold for the class
      * @return A boolean describing whether the rep invariant has held or not
      */
-    public boolean checkRep(){
+    private synchronized boolean checkRep(){
 
         int totalMapEntries = 0;
         for (List<Long> list : requestMap.values()) {
