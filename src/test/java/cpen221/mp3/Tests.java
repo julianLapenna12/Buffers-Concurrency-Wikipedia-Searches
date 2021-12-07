@@ -478,7 +478,7 @@ public class Tests {
         mediator.getPage("Ant");
         mediator.getPage("Snake");
 
-        Assert.assertEquals(8, mediator.windowedPeakLoad(6));
+        Assert.assertEquals(9, mediator.windowedPeakLoad(6));
 
     }
 

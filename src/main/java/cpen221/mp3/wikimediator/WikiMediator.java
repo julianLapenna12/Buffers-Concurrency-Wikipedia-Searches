@@ -57,22 +57,17 @@ public class WikiMediator {
      * Method which checks that the rep invariants hold for the class
      * @return A boolean describing whether the rep invariant has held or not
      */
-    private synchronized boolean checkRep(){
-
+    private synchronized void checkRep(){
         int totalMapEntries = 0;
         for (List<Long> list : requestMap.values()) {
             totalMapEntries+=list.size();
-            if (list.size()==0) {
-                return false;
-            }
+            assert list.size()!=0;
             for (Long element : list) {
-                if (!requests.contains(element)) {
-                    return false;
-                }
+                assert requests.contains(element);
             }
         }
 
-        return requests.size() >= totalMapEntries && pageData.getSize() <= totalMapEntries;
+        assert requests.size() >= totalMapEntries && pageData.getSize() <= totalMapEntries;
     }
 
     /**
@@ -131,6 +126,9 @@ public class WikiMediator {
 
         List<String> results;
         results = wiki.search(query, limit);
+
+        checkRep();
+
         return (results);
     }
 
@@ -165,6 +163,8 @@ public class WikiMediator {
             result = currentPage.getText();
             pageData.put(currentPage);
         }
+
+        checkRep();
 
         return result;
     }
@@ -290,6 +290,8 @@ public class WikiMediator {
                                             .collect(Collectors.toList());
         Collections.reverse(listToReturn);
 
+        checkRep();
+
         //Ensures that limit is not too large for the return list
         if (limit >= listToReturn.size()) {
             return listToReturn;
@@ -331,6 +333,8 @@ public class WikiMediator {
                 .collect(Collectors.toList());
         Collections.reverse(returnList);
 
+        checkRep();
+
         //Ensures that limit is not too big for the return list
         if (maxItems >= returnList.size()) {
             return returnList;
@@ -347,7 +351,6 @@ public class WikiMediator {
     public int windowedPeakLoad(int timeWindowInSeconds) {
         requests.add(System.currentTimeMillis());
 
-        requests.add(System.currentTimeMillis());
         int currentTotal;
         int largestTotal = 0;
 
@@ -359,6 +362,8 @@ public class WikiMediator {
                 }
             }
         }
+
+        checkRep();
 
         return largestTotal;
     }

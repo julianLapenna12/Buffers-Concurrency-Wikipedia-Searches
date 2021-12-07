@@ -11,7 +11,6 @@ import java.io.Writer;
 import java.util.*;
 
 public class Task3Testing {
-
     @Test
     public void testZeitgeistLimit() {
         WikiMediator testingWikiMediator = new WikiMediator(5, 3);
@@ -103,11 +102,11 @@ public class Task3Testing {
 
     @Test
     public void windowedPeakLoadTest_endingLoad() {
-        WikiMediator mediator = new WikiMediator(10, 30);
-        mediator.search("Giraffe", 1);
-        mediator.search("Zebra", 1);
-        mediator.search("Lion", 1);
-        mediator.windowedPeakLoad();
+        WikiMediator testingWikiMediator = new WikiMediator(10, 5);
+        testingWikiMediator.search("Giraffe", 1);
+        testingWikiMediator.search("Zebra", 1);
+        testingWikiMediator.search("Lion", 1);
+        testingWikiMediator.windowedPeakLoad();
 
         try {
             Thread.sleep(8 * 1000);
@@ -115,16 +114,15 @@ public class Task3Testing {
             ex.printStackTrace();
         }
 
-        mediator.getPage("Dog");
-        mediator.getPage("Cat");
-        mediator.getPage("Bird");
-        mediator.getPage("Rat");
-        mediator.getPage("Hamster");
-        mediator.getPage("Porcupine");
-        mediator.getPage("Ant");
-        mediator.getPage("Snake");
+        testingWikiMediator.getPage("Cat");
+        testingWikiMediator.getPage("Bird");
+        testingWikiMediator.getPage("Rat");
+        testingWikiMediator.getPage("Hamster");
+        testingWikiMediator.getPage("Porcupine");
+        testingWikiMediator.getPage("Ant");
+        testingWikiMediator.getPage("Snake");
 
-        Assert.assertEquals(8, mediator.windowedPeakLoad(6));
+        Assert.assertEquals(8, testingWikiMediator.windowedPeakLoad(6));
 
     }
 
