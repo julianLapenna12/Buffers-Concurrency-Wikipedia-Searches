@@ -42,12 +42,10 @@ public class WikiMediator {
     The FSFT pageData is assumed to be a threadsafe datatype, as per task 2
     */
 
-    private FSFTBuffer pageData;
+    private final FSFTBuffer pageData;
     private List<Long> requests = Collections.synchronizedList(new ArrayList<Long>());
-    private Map<String, ArrayList<Long>> requestMap = Collections.synchronizedMap(new HashMap<String, ArrayList<Long>>());
-    private String requestMapFileLocation = "local/dataMap.json";
-    private String requestListFileLocation = "local/dataList.json";
-    private Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
+    private Map<String, ArrayList<Long>> requestMap = Collections.synchronizedMap(new HashMap<>());
+    private final Wiki wiki = new Wiki.Builder().withDomain("en.wikipedia.org").build();
 
     /**
      * Constructor that creates new pageData database, and loads in all previous data (if any exists) from local data.json file used to store all data
@@ -61,15 +59,17 @@ public class WikiMediator {
             try {
                 Gson gson = new Gson();
 
+                String requestMapFileLocation = "local/dataMap.json";
                 Reader readerMap = Files.newBufferedReader(Paths.get(requestMapFileLocation));
                 try{
                     requestMap = gson.fromJson(readerMap, new TypeToken<Map<String, List<Long>>>() {}.getType());
                 }
                 catch(NullPointerException e){
-                    requestMap = Collections.synchronizedMap(new HashMap<String, ArrayList<Long>>());
+                    requestMap = Collections.synchronizedMap(new HashMap<>());
                 }
                 readerMap.close();
 
+                String requestListFileLocation = "local/dataList.json";
                 Reader readerList = Files.newBufferedReader(Paths.get(requestListFileLocation));
                 requests = gson.fromJson(readerList, new TypeToken<List<Long>>() {
                 }.getType());
@@ -90,18 +90,18 @@ public class WikiMediator {
     public List<String> search(String query, int limit) {
         requests.add(System.currentTimeMillis());
 
-        List<Long> defaultList = new ArrayList<Long>();
+        ArrayList<Long> defaultList = new ArrayList<>();
         defaultList.add(System.currentTimeMillis());
 
         synchronized (this) {
             if (requestMap.containsKey(query)) {
                 requestMap.get(query).add(System.currentTimeMillis());
             } else {
-                requestMap.put(query, (ArrayList<Long>) defaultList);
+                requestMap.put(query, defaultList);
             }
         }
 
-        List<String> results = new ArrayList<String>();
+        List<String> results;
         results = wiki.search(query, limit);
         return (results);
     }
@@ -114,14 +114,14 @@ public class WikiMediator {
     public String getPage(String pageTitle) {
         requests.add(System.currentTimeMillis());
 
-        List<Long> defaultList = new ArrayList<Long>();
+        ArrayList<Long> defaultList = new ArrayList<>();
         defaultList.add(System.currentTimeMillis());
 
         synchronized (this) {
             if (requestMap.containsKey(pageTitle)) {
                 requestMap.get(pageTitle).add(System.currentTimeMillis());
             } else {
-                requestMap.put(pageTitle, (ArrayList<Long>) defaultList);
+                requestMap.put(pageTitle, defaultList);
             }
         }
 
@@ -149,7 +149,7 @@ public class WikiMediator {
     public List<String> zeitgeist(int limit) {
         requests.add(System.currentTimeMillis());
 
-        Map<String, Integer> listToSort = new HashMap<String, Integer>();
+        Map<String, Integer> listToSort = new HashMap<>();
 
         //Creates a list to sort that simply concatenates the list of times into a single number representing number of searches
         synchronized (this) {
@@ -182,13 +182,13 @@ public class WikiMediator {
     public List<String> trending(int timeLimitInSeconds, int maxItems) {
         requests.add(System.currentTimeMillis());
 
-        Map<String, Integer> listToSort = new HashMap<String, Integer>();
+        Map<String, Integer> listToSort = new HashMap<>();
 
         //Creates a list to sort by taking out all entries not within the time window, and returning a map with queries and the respective number of entries
         synchronized (this) {
             for (int i = 0; i < requestMap.size(); i++) {
                 for (int j = 0; j < requestMap.get(requestMap.keySet().toArray()[i]).size(); j++) {
-                    if ((long) (requestMap.get(requestMap.keySet().toArray()[i]).get(j)) > System.currentTimeMillis() - timeLimitInSeconds*1000) {
+                    if (requestMap.get(requestMap.keySet().toArray()[i]).get(j) > System.currentTimeMillis() - timeLimitInSeconds* 1000L) {
                         if (!listToSort.containsKey(requestMap.keySet().toArray()[i])) {
                             listToSort.put((String) requestMap.keySet().toArray()[i], 1);
                         } else {
@@ -223,12 +223,12 @@ public class WikiMediator {
         requests.add(System.currentTimeMillis());
 
         requests.add(System.currentTimeMillis());
-        int currentTotal = 0;
+        int currentTotal;
         int largestTotal = 0;
 
         synchronized (this) {
             for (int i = 0; i < requests.size(); i++) {
-                currentTotal = countInWindow(requests, requests.get(i) - timeWindowInSeconds * 1000, requests.get(i) + 1);
+                currentTotal = countInWindow(requests, requests.get(i) - timeWindowInSeconds * 1000L, requests.get(i) + 1);
                 if (currentTotal > largestTotal) {
                     largestTotal = currentTotal;
                 }
@@ -256,8 +256,8 @@ public class WikiMediator {
     private int countInWindow (List<Long> list, Long start, Long end) {
         int count = 0;
 
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) >= start && list.get(i) < end) {
+        for (Long aLong : list) {
+            if (aLong >= start && aLong < end) {
                 count++;
             }
         }
@@ -291,5 +291,4 @@ public class WikiMediator {
             System.out.println("Test has Failed - unable to write to list json");
         }
     }
-
 }
