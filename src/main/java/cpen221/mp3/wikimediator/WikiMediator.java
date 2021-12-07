@@ -73,7 +73,6 @@ public class WikiMediator {
 
         ArrayList<String> path = new ArrayList<>();
 
-        //queue.add(startNode);
         queueStrings.add(pageTitle1);
         queue.add(startNode);
 
