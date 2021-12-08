@@ -12,13 +12,19 @@ class WikiResponse {
     public Object response;
 
     /**
-     *
-     * @param id
-     * @param response
+     * @param id the set ID of the response
+     * @param response the response from Wikimediator, either a string a array of string
      */
 
     public WikiResponse(String id, Object response){
         this.id = id;
         this.response = response;
+    }
+
+    /**
+     * Empty Constructor Overload
+     */
+    public WikiResponse() {
+
     }
 }

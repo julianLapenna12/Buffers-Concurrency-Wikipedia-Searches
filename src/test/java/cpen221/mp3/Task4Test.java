@@ -17,7 +17,7 @@ public class Task4Test {
     private static TestClient client;
 
     @BeforeAll
-    public static void setUpServer(){
+    public static void setUpServer() {
 
         WikiMediator mediator = new WikiMediator(10, 10);
         WikiMediatorServer server = new WikiMediatorServer(6666, 4, mediator);
@@ -33,7 +33,7 @@ public class Task4Test {
     }
 
     @Test
-    public void testShutdown(){
+    public void testShutdown() {
         WikiRequestT req = new WikiRequestT();
         req.id = "1";
         req.type = "stop";
@@ -44,7 +44,7 @@ public class Task4Test {
     }
 
     @Test
-    public void testGetPage(){
+    public void testGetPage() {
         WikiRequestT req = buildReq("1", "getPage");
         req.pageTitle = "Barack Obama";
         String message = gson.toJson(req);
@@ -53,7 +53,7 @@ public class Task4Test {
     }
 
     @Test
-    public void testMultiReq(){
+    public void testMultiReq() {
         WikiResponseT mes = makeRequest(client, buildPageRequest("1", "Abraham Lincoln"));
         WikiResponseT mes2 = makeRequest(client, buildPageRequest("2", "Mark Van Raamsdonk"));
         Assertions.assertEquals("success", mes.status);
@@ -61,37 +61,38 @@ public class Task4Test {
     }
 
     @Test
-    public void searchReq(){
+    public void searchReq() {
         WikiResponseT mes = makeRequest(client, buildSearchRequest("1", "Barack Obama", 5));
         Assertions.assertEquals("success", mes.status);
     }
 
     @Test
-    public void zeitReq(){
+    public void zeitReq() {
         WikiResponseT mes = makeRequest(client, buildZeitgeist("2", 10));
         Assertions.assertEquals("success", mes.status);
     }
 
     @Test
-    public void shortestReq(){
-        WikiResponseT mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
+    public void shortestReq() {
+        WikiResponseT mes =
+            makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
         Assertions.assertEquals("success", mes.status);
     }
 
     @Test
-    public void trendingReq(){
-        WikiResponseT mes= makeRequest(client, buildTrending("1", 10, 10));
+    public void trendingReq() {
+        WikiResponseT mes = makeRequest(client, buildTrending("1", 10, 10));
         Assertions.assertEquals("success", mes.status);
     }
 
     @Test
-    public void peakLoadReq(){
-        WikiResponseT mes= makeRequest(client, buildWindowedPeakLoad("1", 10));
+    public void peakLoadReq() {
+        WikiResponseT mes = makeRequest(client, buildWindowedPeakLoad("1", 10));
         Assertions.assertEquals("success", mes.status);
     }
 
     @Test
-    public void searchReqManyClient(){
+    public void searchReqManyClient() {
         TestClient client2 = buildClient("127.0.0.1", 6666);
         TestClient client3 = buildClient("127.0.0.1", 6666);
         TestClient client4 = buildClient("127.0.0.1", 6666);
@@ -112,7 +113,7 @@ public class Task4Test {
     }
 
     @Test
-    public void searchReqManyClientSD(){
+    public void searchReqManyClientSD() {
         TestClient client2 = buildClient("127.0.0.1", 6666);
         TestClient client3 = buildClient("127.0.0.1", 6666);
         TestClient client4 = buildClient("127.0.0.1", 6666);
@@ -134,11 +135,14 @@ public class Task4Test {
     }
 
     @Test
-    public void multiShortestReq(){
+    public void multiShortestReq() {
         TestClient client2 = buildClient("127.0.0.1", 6666);
-        WikiResponseT mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
-        WikiResponseT mes2= makeRequest(client2, buildShortestPath("2", "Mark Van Raamsdonk", "Philosophy", 100));
-        WikiResponseT mes3= makeRequest(client, buildShortestPath("3", "John Horton Conway", "American Civil War", 100));
+        WikiResponseT mes =
+            makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "George Smoot", 100));
+        WikiResponseT mes2 =
+            makeRequest(client2, buildShortestPath("2", "Mark Van Raamsdonk", "Philosophy", 100));
+        WikiResponseT mes3 = makeRequest(client,
+            buildShortestPath("3", "John Horton Conway", "American Civil War", 100));
         WikiResponseT mes4 = makeRequest(client, buildShutdown("Shutdown"));
         Assertions.assertEquals("success", mes.status);
         Assertions.assertEquals("success", mes2.status);
@@ -147,25 +151,27 @@ public class Task4Test {
     }
 
     @Test
-    public void timeoutTest(){
-        WikiResponseT mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "Philosophy", 1));
+    public void timeoutTest() {
+        WikiResponseT mes =
+            makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "Philosophy", 1));
         Assertions.assertEquals("failed", mes.status);
     }
 
 
     @Test
-    public void testManyThread(){
+    public void testManyThread() {
         TestClient client2 = buildClient("127.0.0.1", 6666);
         TestClient client3 = buildClient("127.0.0.1", 6666);
 
-        Thread clientThread1 = new Thread(()->{
+        Thread clientThread1 = new Thread(() -> {
             WikiResponseT mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
             WikiResponseT mes6 = makeRequest(client2, buildShutdown("2"));
             Assertions.assertEquals("success", mes6.status);
         });
-        Thread clientThread2 = new Thread(()->{
+        Thread clientThread2 = new Thread(() -> {
             WikiResponseT mes2 = makeRequest(client, buildSearchRequest("3", "Barack Obama", 5));
-            WikiResponseT mes3= makeRequest(client, buildShortestPath("4", "John Horton Conway", "American Civil War", 100));
+            WikiResponseT mes3 = makeRequest(client,
+                buildShortestPath("4", "John Horton Conway", "American Civil War", 100));
             Assertions.assertEquals("success", mes2.status);
             Assertions.assertEquals("failed", mes3.status);
         });
@@ -177,14 +183,14 @@ public class Task4Test {
 
     }
 
-    public WikiRequestT buildReq(String id, String type){
+    public WikiRequestT buildReq(String id, String type) {
         WikiRequestT req = new WikiRequestT();
         req.id = id;
         req.type = type;
         return req;
     }
 
-    public WikiRequestT buildReq(String id, String type, Integer timeout){
+    public WikiRequestT buildReq(String id, String type, Integer timeout) {
         WikiRequestT req = new WikiRequestT();
         req.id = id;
         req.type = type;
@@ -192,52 +198,52 @@ public class Task4Test {
         return req;
     }
 
-    public WikiRequestT buildPageRequest(String id, String page){
+    public WikiRequestT buildPageRequest(String id, String page) {
         WikiRequestT req = buildReq(id, "getPage");
         req.pageTitle = page;
         req.timeout = 20;
         return req;
     }
 
-    public WikiRequestT buildSearchRequest(String id, String query, int limit){
+    public WikiRequestT buildSearchRequest(String id, String query, int limit) {
         WikiRequestT req = buildReq(id, "search");
         req.query = query;
         req.limit = limit;
         return req;
     }
 
-    public WikiRequestT buildSearchRequest(String id, String query, int limit, int timeout){
+    public WikiRequestT buildSearchRequest(String id, String query, int limit, int timeout) {
         WikiRequestT req = buildReq(id, "search", timeout);
         req.query = query;
         req.limit = limit;
         return req;
     }
 
-    public WikiRequestT buildZeitgeist(String id, int limit){
+    public WikiRequestT buildZeitgeist(String id, int limit) {
         WikiRequestT req = buildReq(id, "zeitgeist");
         req.limit = limit;
         return req;
     }
 
-    public WikiRequestT buildTrending(String id, int timeLimit, int maxItems){
+    public WikiRequestT buildTrending(String id, int timeLimit, int maxItems) {
         WikiRequestT req = buildReq(id, "trending");
         req.timeLimitInSeconds = timeLimit;
         req.maxItems = maxItems;
         return req;
     }
 
-    public WikiRequestT buildShutdown(String id){
+    public WikiRequestT buildShutdown(String id) {
         WikiRequestT req = buildReq(id, "stop");
         return req;
     }
 
-    public WikiRequestT buildWindowedPeakLoad(String id, int timeWindow){
+    public WikiRequestT buildWindowedPeakLoad(String id, int timeWindow) {
         WikiRequestT req = buildReq(id, "windowedPeakLoad");
         req.timeWindowInSeconds = timeWindow;
         return req;
     }
 
-    public WikiRequestT buildShortestPath(String id, String page1, String page2, int timeout){
+    public WikiRequestT buildShortestPath(String id, String page1, String page2, int timeout) {
         WikiRequestT req = buildReq(id, "shortestPath");
         req.pageTitle1 = page1;
         req.pageTitle2 = page2;
@@ -246,13 +252,13 @@ public class Task4Test {
     }
 
 
-    public static TestClient buildClient(String ip, int port){
+    public static TestClient buildClient(String ip, int port) {
         TestClient client = new TestClient();
         client.startConnection(ip, port);
         return client;
     }
 
-    public WikiResponseT makeRequest(TestClient client, WikiRequestT req){
+    public WikiResponseT makeRequest(TestClient client, WikiRequestT req) {
         String message = gson.toJson(req);
         String response = client.sendMessage(message);
         System.out.println(response);
@@ -280,12 +286,11 @@ class WikiResponseT {
     public Object response;
 
     /**
-     *
      * @param id
      * @param response
      */
 
-    public WikiResponseT(String id, Object response){
+    public WikiResponseT(String id, Object response) {
         this.id = id;
         this.response = response;
     }
