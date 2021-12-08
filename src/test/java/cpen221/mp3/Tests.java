@@ -818,6 +818,21 @@ public class Tests {
         System.out.println(path);
     }
 
+    @Test
+    public void testTessa() {
+        List<String> path = null;
+        WikiMediator wikiM = new WikiMediator(100, 60 * 60);
+
+        try {
+            path = wikiM.shortestPath("Tessa Virtue",
+                    "Katy Perry", 10); // actually takes around 2 minutes
+            Assertions.fail();
+        } catch (TimeoutException e) {
+            // this one should timeout
+        }
+        Assertions.assertNull(path);
+    }
+
     private static Gson gson;
     private static TestClient client;
 
