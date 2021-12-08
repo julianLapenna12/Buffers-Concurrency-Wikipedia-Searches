@@ -11,12 +11,16 @@
 ##Classes:
 
 * `WikiMediatorServer.java`
+* `Tak4Test.java`
+* `WikiRequest`
+* `WikiResponse`
 
 
 ##Documentation
 * `Wrote AI, RI, AF and almost all specs for WikiMediatorServer.java`
-* `Wrote all documentation for page.java`
+
 
 
 ##WikimediatorServer.java Methods Implemented:
 * `All methods`
+* 
