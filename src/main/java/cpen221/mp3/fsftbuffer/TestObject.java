@@ -26,7 +26,7 @@ public class TestObject implements Bufferable {
 
     /**
      * Creates a test object with an identifier
-     * @param id the object's identifier
+     * @param id the object's identifier, not null
      */
     public TestObject(String id) {
         this.id = id;

@@ -35,10 +35,9 @@ public class WikiNode {
     /**
      * Create a WikiNode that represents a Wikipedia page and some (limited)
      * information about it
-     * @param id the title of the WikiNode. The title corresponds the title of
-     *           its associated Wikipedia page
-     * @param parent a WikiNode that is forward linked to this WikiNode. This
-     *               represents a Wikipedia page that can link to the current page
+     * @param id the title of the WikiNode, not null.
+     * @param parent a WikiNode that is forward linked to this WikiNode, can be
+     *               null (if this is the source WikiNode)
      */
     public WikiNode(String id, WikiNode parent) {
         this.id = id;

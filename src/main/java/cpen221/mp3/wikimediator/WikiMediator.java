@@ -183,8 +183,8 @@ public class WikiMediator {
 
     /**
      *
-     * @param pageTitle1 The title of the source Wikipedia page
-     * @param pageTitle2 The title of the destination Wikipedia page
+     * @param pageTitle1 The title of the source Wikipedia page, is not null
+     * @param pageTitle2 The title of the destination Wikipedia page, is not null
      * @param timeout the duration in seconds that the search may last
      * @return An ordered list of Wikipedia pages that can be traversed by
      *         internal Wikipedia links to arrive at the destination from
@@ -261,7 +261,7 @@ public class WikiMediator {
     /**
      * Given a child WikiNode, traverse up the tree of its parents to
      * find a path from the upper-most parent to the given child WikiNode
-     * @param w the child WikiNode
+     * @param w the child WikiNode, not null
      * @return a list of IDs including the parent and child nodes that
      *         represent a path that can be taken from the parent Wikipedia
      *         page to arrive at the child Wikipedia page
