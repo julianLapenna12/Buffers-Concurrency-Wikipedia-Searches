@@ -148,6 +148,37 @@ public class Task4Test {
         Assertions.assertEquals("success", mes4.status);
     }
 
+    @Test
+    public void timeoutTest(){
+        WikiResponse mes= makeRequest(client, buildShortestPath("1", "Mark Van Raamsdonk", "Philosophy", 1));
+        Assertions.assertEquals("failed", mes.status);
+    }
+
+
+    @Test
+    public void testManyThread(){
+        TestClient client2 = buildClient("127.0.0.1", 6666);
+        TestClient client3 = buildClient("127.0.0.1", 6666);
+
+        Thread clientThread1 = new Thread(()->{
+            WikiResponse mes2 = makeRequest(client2, buildSearchRequest("1", "Barack Obama", 5));
+            WikiResponse mes6 = makeRequest(client2, buildShutdown("2"));
+            Assertions.assertEquals("success", mes6.status);
+        });
+        Thread clientThread2 = new Thread(()->{
+            WikiResponse mes2 = makeRequest(client, buildSearchRequest("3", "Barack Obama", 5));
+            WikiResponse mes3= makeRequest(client, buildShortestPath("4", "John Horton Conway", "American Civil War", 100));
+            Assertions.assertEquals("success", mes2.status);
+            Assertions.assertEquals("failed", mes3.status);
+        });
+
+        clientThread1.start();
+        clientThread2.start();
+        WikiResponse mes = makeRequest(client3, buildSearchRequest("5", "String Theory", 5, 5));
+        Assertions.assertEquals("success", mes);
+
+    }
+
     public WikiRequest buildReq(String id, String type){
         WikiRequest req = new WikiRequest();
         req.id = id;
@@ -172,6 +203,13 @@ public class Task4Test {
 
     public WikiRequest buildSearchRequest(String id, String query, int limit){
         WikiRequest req = buildReq(id, "search");
+        req.query = query;
+        req.limit = limit;
+        return req;
+    }
+
+    public WikiRequest buildSearchRequest(String id, String query, int limit, int timeout){
+        WikiRequest req = buildReq(id, "search", timeout);
         req.query = query;
         req.limit = limit;
         return req;

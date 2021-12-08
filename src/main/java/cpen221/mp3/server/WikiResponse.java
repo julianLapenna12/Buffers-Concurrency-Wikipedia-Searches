@@ -10,12 +10,6 @@ public class WikiResponse {
 
     }
 
-    public WikiResponse(String id, Object response, String status){
-        this.id = id;
-        this.status = status;
-        this.response = response;
-    }
-
     public WikiResponse(String id, Object response){
         this.id = id;
         this.response = response;
