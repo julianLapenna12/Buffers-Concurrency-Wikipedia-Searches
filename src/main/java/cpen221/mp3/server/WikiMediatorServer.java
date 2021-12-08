@@ -11,8 +11,39 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.*;
 
+/**
+ * Creates a Server which using WikiMediator to handle requests from clients corresponding to functions of Wikimediator.
+ * The Available Functions and Parameters to Call are:
+ * search: String query, int Limit
+ * getPage: String pageTitle
+ * zeitgeist: int limit
+ * shortestPath: String pageTitle1, String pageTitle2, int timeout
+ * trending: int timeLimitInSeconds, int maxItems
+ * windowedPeakLoad int timeWindowInSeconds || void (windowed peak load can be called with no parameters, if so defaults to 30 seconds)
+ *
+ * Note: int timeout can optionally be overloaded into any request, but is required for shortestPath.
+ * in both cases timeout is the amount of time for the request to timeout in seconds
+ */
 public class WikiMediatorServer {
 
+    /**
+     * Representation  Invariant:
+     * Server socket is never null, with port corresponding to specified port by user
+     * Wikimediator is never null
+     * There are never more than n threads running at any given time
+     */
+
+    /**
+     * Abstraction function:
+     * serverSocket represents the server to which responses are written, and from which requests are obtained
+     * mediator is the used to obtain the requested information from wikipedia and metrics from previous requests
+     */
+
+    /**
+     * Thread Safety Arguement;
+     * No separate threads are writing to and reading from any data structures outside their thread other than WikiMediator
+     * As per WikiMedia's and FSTBuffers specs, Wikimedia is thread safe so can be called by multiple threads
+     */
     private final ServerSocket serverSocket;
     private final WikiMediator mediator;
     private boolean shutdown = false;
@@ -20,7 +51,7 @@ public class WikiMediatorServer {
 
     /**
      * Start a server at a given port number, with the ability to process
-     * upto n clients concurrently.
+     * up to n clients concurrently.
      * if greater than n clients are connected, then the server will block until a client disconnects,
      * creating space for another clients request to be handled.
      * @param port the port number to bind the server to, 9000 <= {@code port} <= 9999
