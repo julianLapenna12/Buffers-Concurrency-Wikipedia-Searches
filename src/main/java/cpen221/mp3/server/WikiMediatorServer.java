@@ -15,14 +15,14 @@ public class WikiMediatorServer {
 
     private final ServerSocket serverSocket;
     private final WikiMediator mediator;
-    private final int maxThreads;
-    private int numThread = 0;
     private boolean shutdown = false;
+    private Semaphore blocker;
 
     /**
      * Start a server at a given port number, with the ability to process
-     * upto n requests concurrently.
-     *
+     * upto n clients concurrently.
+     * if greater than n clients are connected, then the server will block until a client disconnects,
+     * creating space for another clients request to be handled.
      * @param port the port number to bind the server to, 9000 <= {@code port} <= 9999
      * @param n the number of concurrent requests the server can handle, 0 < {@code n} <= 32
      * @param wikiMediator the WikiMediator instance to use for the server, {@code wikiMediator} is not {@code null}
@@ -30,8 +30,8 @@ public class WikiMediatorServer {
     public WikiMediatorServer(int port, int n, WikiMediator wikiMediator) {
         try{
             serverSocket = new ServerSocket(port);
-            maxThreads = n;
             mediator = wikiMediator;
+            blocker = new Semaphore(n);
         }
         catch (IOException e){
             throw new RuntimeException();
@@ -40,7 +40,13 @@ public class WikiMediatorServer {
     }
 
     /**
-     *
+     *Calling Serve causes the server to start listening for client sockets,
+     * blocking the thread on which serve was called.
+     * Each request sent to the server by a client should be a JSON formatted String
+     * Containing an ID for each request, a request parameter specifying which method
+     * from the mediator is being called, the required parameters for the respective
+     * method from WikiMediator, and optionally a Timeout parameter specifying how long
+     * to try the request for before timing out.
      */
     public void serve () {
         shutdown = false;
@@ -49,17 +55,13 @@ public class WikiMediatorServer {
                 shutdown();
             }
             try{
-                while(numThread >= maxThreads){
-                    //Blocks until a thread is free if there are too many threads
-                }
+                blocker.acquire();
                 final Socket socket = serverSocket.accept();
-                numThread++;
                 Thread handler = new Thread(() -> {
                     try {
                         try {
                             handle(socket);
                         } finally {
-                            numThread--;
                             socket.close();
                         }
                     } catch (IOException ioe) {
@@ -67,16 +69,18 @@ public class WikiMediatorServer {
                     }
                 });
                 handler.start();
+                blocker.release();
             }
-            catch (IOException ioe){
+            catch (IOException | InterruptedException ioe){
                 throw new RuntimeException();
             }
         }
     }
 
     /**
-     *
-     * @param socket
+     * When a Client opens a socket to the server, handle() handles the requests from
+     * the client and returns the expected information
+     * @param socket the socket whose inputs will be handled and to whom the output is written
      * @throws IOException
      */
     private void handle(Socket socket) throws IOException{
@@ -104,10 +108,14 @@ public class WikiMediatorServer {
     }
 
     /**
-     *
-     * @param request
-     * @param gson
-     * @return
+     * Given a request converted from a JSON formatted string,
+     * creates a JSON formatted string as a response, calling the
+     * function from WikiMediator specified in the request
+     * @param request the request specifying which method from WikiMediator
+     *               to be called, the required parameters, and the ID of the request
+     * @param gson the instance of GSON used to convert the output of WikiMediator to a JSON formatted string
+     * @return a JSON formatted String with the ID corresponding to the request,
+     * the status whether the request succeeded or failed, and the information from the mediator
      */
     private String handleRequest(WikiRequest request, Gson gson){
         WikiResponse response = new WikiResponse();
@@ -169,7 +177,7 @@ public class WikiMediatorServer {
 
     //Handles shutdown by writing state of Wikimediator to disk
     /**
-     *
+     * Shuts down the server, writing the current state of mediator to disk at /local
      */
     private void shutdown() {
         mediator.writeToFile();

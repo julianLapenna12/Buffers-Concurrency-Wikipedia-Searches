@@ -1,6 +1,6 @@
 package cpen221.mp3.server;
 
-public class WikiRequest {
+class WikiRequest {
     public String id;
     public String type;
     public String query;
