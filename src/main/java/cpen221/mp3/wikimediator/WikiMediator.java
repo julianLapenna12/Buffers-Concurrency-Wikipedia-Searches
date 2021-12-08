@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class WikiMediator {
 
     /*
-    Rep Invariant
+    Rep Invariant :
 
     requests.size() >= Total number of entries in all requestMap value lists
 
@@ -83,9 +83,11 @@ public class WikiMediator {
     }
 
     /**
-     * Constructor that creates new pageData database, and loads in all previous data (if any exists) from local data.json file used to store all data
+     * Constructor that creates new pageData database, and loads in all previous data
+     * (if any exists) from local data.json file used to store all data
      * @param capacity Capacity of the database.  Must be greater than or equal to 1
-     * @param stalenessInterval staleness interval for pages in the database in seconds.  Must be greater than or equal to 1
+     * @param stalenessInterval staleness interval for pages in the database in seconds.
+     *                          Must be greater than or equal to 1
      */
     public WikiMediator(int capacity, int stalenessInterval) {
         pageData = new FSFTBuffer<page>(capacity, stalenessInterval);
@@ -279,19 +281,23 @@ public class WikiMediator {
 
 
     /**
-     * Returns the most common search queries and getPage requests as a sorted list since the start of Wikimediator
+     * Returns the most common search queries and getPage requests as a sorted list since the
+     * start of Wikimediator
      * @param limit Maximum number of elements to return.  Must be greater than or equal to 1
-     * @return A list of search queries and getPage requests of size limit sorted in decreasing order by the number of times they were requested
+     * @return A list of search queries and getPage requests of size limit sorted in decreasing
+     * order by the number of times they were requested
      */
     public List<String> zeitgeist(int limit) {
         requests.add(System.currentTimeMillis());
 
         Map<String, Integer> listToSort = new HashMap<>();
 
-        //Creates a list to sort that simply concatenates the list of times into a single number representing number of searches
+        //Creates a list to sort that simply concatenates the list of times into a single number
+        // representing number of searches
         synchronized (this) {
             for (int i = 0; i < requestMap.size(); i++) {
-                listToSort.put((String) requestMap.keySet().toArray()[i], requestMap.get(requestMap.keySet().toArray()[i]).size());
+                listToSort.put((String) requestMap.keySet().toArray()[i],
+                        requestMap.get(requestMap.keySet().toArray()[i]).size());
             }
         }
 
@@ -314,24 +320,29 @@ public class WikiMediator {
 
     /**
      * Finds the most searched items in the past timeLimitInSeconds seconds
-     * @param timeLimitInSeconds Amount of seconds since current time to begin accepting searches as valid.  Must be greater than or equal to 1
+     * @param timeLimitInSeconds Amount of seconds since current time to begin accepting searches as valid.
+     *                           Must be greater than or equal to 1
      * @param maxItems Maximum number of items to return.  Must be greater than or equal to 1
-     * @return A list in decreasing order of searches based on the number of times they have been searched in the past timeLimitInSeconds seconds
+     * @return A list in decreasing order of searches based on the number of times they have been searched
+     * in the past timeLimitInSeconds seconds
      */
     public List<String> trending(int timeLimitInSeconds, int maxItems) {
         requests.add(System.currentTimeMillis());
 
         Map<String, Integer> listToSort = new HashMap<>();
 
-        //Creates a list to sort by taking out all entries not within the time window, and returning a map with queries and the respective number of entries
+        //Creates a list to sort by taking out all entries not within the time window, and returning a
+        // map with queries and the respective number of entries
         synchronized (this) {
             for (int i = 0; i < requestMap.size(); i++) {
                 for (int j = 0; j < requestMap.get(requestMap.keySet().toArray()[i]).size(); j++) {
-                    if (requestMap.get(requestMap.keySet().toArray()[i]).get(j) > System.currentTimeMillis() - timeLimitInSeconds* 1000L) {
+                    if (requestMap.get(requestMap.keySet().toArray()[i]).get(j)
+                            > System.currentTimeMillis() - timeLimitInSeconds * 1000L) {
                         if (!listToSort.containsKey(requestMap.keySet().toArray()[i])) {
                             listToSort.put((String) requestMap.keySet().toArray()[i], 1);
                         } else {
-                            listToSort.put((String) requestMap.keySet().toArray()[i], listToSort.get(requestMap.keySet().toArray()[i]) + 1);
+                            listToSort.put((String) requestMap.keySet().toArray()[i],
+                                    listToSort.get(requestMap.keySet().toArray()[i]) + 1);
                         }
                     }
                 }
@@ -368,7 +379,8 @@ public class WikiMediator {
 
         synchronized (this) {
             for (int i = 0; i < requests.size(); i++) {
-                currentTotal = countInWindow(requests, requests.get(i) - timeWindowInSeconds * 1000L, requests.get(i) + 1);
+                currentTotal = countInWindow(requests, requests.get(i) -
+                        timeWindowInSeconds * 1000L, requests.get(i) + 1);
                 if (currentTotal > largestTotal) {
                     largestTotal = currentTotal;
                 }

@@ -20,29 +20,31 @@ import java.util.concurrent.*;
  * zeitgeist: int limit
  * shortestPath: String pageTitle1, String pageTitle2, int timeout
  * trending: int timeLimitInSeconds, int maxItems
- * windowedPeakLoad int timeWindowInSeconds || void (windowed peak load can be called with no parameters, if so defaults to 30 seconds)
+ * windowedPeakLoad int timeWindowInSeconds || void (windowed peak load can be called with no parameters,
+ * if so defaults to 30 seconds)
  * <p>
  * Note: int timeout can optionally be overloaded into any request, but is required for shortestPath.
  * in both cases timeout is the amount of time for the request to timeout in seconds
  */
 public class WikiMediatorServer {
 
-    /**
+    /*
      * Representation  Invariant:
      * Server socket is never null, with port corresponding to specified port by user
      * Wikimediator is never null
      * There are never more than n threads running at any given time
      */
 
-    /**
+    /*
      * Abstraction function:
      * serverSocket represents the server to which responses are written, and from which requests are obtained
      * mediator is the used to obtain the requested information from wikipedia and metrics from previous requests
      */
 
-    /**
-     * Thread Safety Arguement;
-     * No separate threads are writing to and reading from any data structures outside their thread other than WikiMediator
+    /*
+     * Thread Safety Argument;
+     * No separate threads are writing to and reading from any data structures outside their thread
+     * other than WikiMediator
      * As per WikiMedia's and FSTBuffers specs, Wikimedia is thread safe so can be called by multiple threads
      */
     private final ServerSocket serverSocket;
@@ -121,9 +123,9 @@ public class WikiMediatorServer {
         Gson gsonReader = new Gson();
         //Try-with-resources declaring the input and output stream
         try (BufferedReader in = new BufferedReader(
-            new InputStreamReader(socket.getInputStream()));
+                new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(
-                 new OutputStreamWriter(socket.getOutputStream()), true)) {
+                     new OutputStreamWriter(socket.getOutputStream()), true)) {
             for (String line = in.readLine(); line != null;
                  line = in.readLine()) {
                 WikiRequest request = gsonReader.fromJson(line, WikiRequest.class);

@@ -33,6 +33,17 @@ public class FSFTBuffer<T extends Bufferable> {
         a DetailedObject containing an object that has been added by the user
     */
 
+    /*
+    Thread safety argument:
+
+    The datatype is thread safe as all the methods that mutate the buffer (all of them) are thread safe.
+        Any possible data race methods are synchronized so that no data races can occur
+    Methods that support removal from the data structure are all synchronized and additionally we have
+        used defensive copying to minimize rep exposure between threads
+    The decision to make every method mutate the buffer, but also be synchronized was in favour of safety
+        over speed, and so the entire FSFTBuffer data structure is also thread-safe
+     */
+
     private final Map<String, DetailedObject> masterMap = new HashMap<>();
     private final int timeout;
     private final int cap;
