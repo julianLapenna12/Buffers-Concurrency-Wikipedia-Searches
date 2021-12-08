@@ -5,7 +5,7 @@
 # Contributions
 
 ## Tasks:
-* ###Tasks 1, 2, 5 
+* ### Tasks 1, 2, 5 
 
 ## Classes:
 * `FSFTBuffer.java`
